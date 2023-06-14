@@ -13,13 +13,14 @@ func (d *Device) String() string {
 }
 
 type Sensor struct {
-	ID       string     `json:"id"`
-	DeviceID string     `json:"device_id"`
-	Name     string     `json:"name"`
-	DataType DataType   `json:"data_type"`
-	Unit     string     `json:"unit"`
-	IsActive bool       `json:"is_active"`
-	Type     SensorType `json:"type"`
+	ID              string     `json:"id"`
+	DeviceID        string     `json:"device_id"`
+	Name            string     `json:"name"`
+	DataType        DataType   `json:"data_type"`
+	Unit            string     `json:"unit"`
+	IsActive        bool       `json:"is_active"`
+	Type            SensorType `json:"type"`
+	PollingInterval int        `json:"polling_interval"`
 }
 
 type DataType string

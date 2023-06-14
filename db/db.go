@@ -12,6 +12,9 @@ type DevicesDatabase interface {
 	GetSensor(deviceId, sensorId string) (models.Sensor, error)
 	DeleteSensor(deviceId, sensorId string) error
 
+	ListPollingSensors() ([]models.Sensor, error)
+
 	AddSensorValue(sensorValue models.SensorValue) error
 	Close() error
+	SeedDatabase()
 }

@@ -111,5 +111,13 @@ func (c *SensorsController) validateSensor(sensor models.CreateSensorRequest) er
 		return &models.ValidationError{Message: "Unit is not allowed for this data type"}
 	}
 
+	if sensor.Type != models.SensorTypePolling && sensor.Type != models.SensorTypeExternal {
+		return &models.ValidationError{Message: "Invalid sensor type"}
+	}
+
+	if sensor.Type == models.SensorTypePolling && sensor.PollingInterval < 1 {
+		return &models.ValidationError{Message: "Polling interval must be at least 1"}
+	}
+
 	return nil
 }

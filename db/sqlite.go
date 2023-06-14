@@ -8,19 +8,12 @@ import (
 )
 
 type SqliteDevicesDatabase struct {
-	db   *sql.DB
-	path string
+	db *sql.DB
 }
 
-func NewDevicesDatabase(path string) (*SqliteDevicesDatabase, error) {
-	db, err := sql.Open("sqlite3", path)
-	if err != nil {
-		return nil, err
-	}
-
-	database := &SqliteDevicesDatabase{path: path, db: db}
-	err = database.createTables()
-	if err != nil {
+func NewDevicesDatabase(db *sql.DB) (*SqliteDevicesDatabase, error) {
+	database := &SqliteDevicesDatabase{db: db}
+	if err := database.createTables(); err != nil {
 		return nil, err
 	}
 
@@ -121,7 +114,7 @@ func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
 }
 
 func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Sensor, error) {
-	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit from sensors where id = ? and device_id = ?")
+	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where id = ? and device_id = ?")
 	if err != nil {
 		return models.Sensor{}, err
 	}
@@ -148,11 +141,13 @@ func readSensor(row interface {
 	var dataType models.DataType
 	var deviceId string
 	var unit string
-	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit)
+	var pollingInterval int
+	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit, &pollingInterval)
+
 	if err != nil {
 		return models.Sensor{}, err
 	}
-	return models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId, Type: sensorType, IsActive: isActive, Unit: unit}, nil
+	return models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId, Type: sensorType, IsActive: isActive, Unit: unit, PollingInterval: pollingInterval}, nil
 }
 
 func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
@@ -176,7 +171,32 @@ func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
 }
 
 func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
-	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit from sensors where device_id = ?", deviceId)
+	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where device_id = ?", deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	results := make([]models.Sensor, 0)
+	for rows.Next() {
+		sensor, err := readSensor(rows)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, sensor)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (db *SqliteDevicesDatabase) ListPollingSensors() ([]models.Sensor, error) {
+	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where sensor_type = 'polling'")
 	if err != nil {
 		return nil, err
 	}
@@ -206,14 +226,14 @@ func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, sensor_type, is_active, unit) values(?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, sensor_type, is_active, unit, polling_interval) values(?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Type, sensor.IsActive, sensor.Unit)
+	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Type, sensor.IsActive, sensor.Unit, sensor.PollingInterval)
 	if err != nil {
 		return err
 	}
@@ -264,6 +284,7 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		unit text,
 		sensor_type text,
 		is_active integer,
+		polling_interval integer,
 		foreign key(device_id) references devices(id) on delete cascade
 	);
 	`
@@ -286,4 +307,20 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		return err
 	}
 	return nil
+}
+
+func (database *SqliteDevicesDatabase) SeedDatabase() {
+	device1 := models.Device{ID: "1", Name: "My Device 1"}
+	sensor1 := models.Sensor{ID: "S1", Name: "Temperature", DeviceID: "1", DataType: models.DataTypeFloat, Type: models.SensorTypeExternal, IsActive: true, Unit: "Celsius", PollingInterval: 0}
+	sensor2 := models.Sensor{ID: "S2", Name: "Availability", DeviceID: "1", DataType: models.DataTypeBool, Type: models.SensorTypePolling, IsActive: true, Unit: "", PollingInterval: 10}
+
+	device2 := models.Device{ID: "2", Name: "My Device 2"}
+	sensor3 := models.Sensor{ID: "S3", Name: "Filling Level", DeviceID: "2", DataType: models.DataTypeInt, Type: models.SensorTypeExternal, IsActive: true, Unit: "%", PollingInterval: 0}
+
+	database.AddDevice(device1)
+	database.AddDevice(device2)
+
+	database.AddSensor(sensor1)
+	database.AddSensor(sensor2)
+	database.AddSensor(sensor3)
 }
