@@ -2,6 +2,7 @@ package tests
 
 import (
 	"database/sql"
+	"encoding/json"
 	"io"
 	"net/http/httptest"
 	"os"
@@ -82,4 +83,20 @@ func RecordPostCallWithDb(t *testing.T, url string, body string, dbValidator DbV
 func IsValidUuid(u string) bool {
 	_, err := uuid.Parse(u)
 	return err == nil
+}
+
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
+func assertErrorMessageEquals(t *testing.T, body []byte, expected string) {
+	var data errorResponse
+	err := json.Unmarshal(body, &data)
+	if err != nil {
+		t.Fatalf("Could not parse error message: %s", err)
+	}
+
+	if data.Error != expected {
+		t.Fatalf("Expected error message '%s', got '%s'", expected, data.Error)
+	}
 }

@@ -1,6 +1,8 @@
 package db
 
-import "github.com/soerenchrist/mini_home/models"
+import (
+	"github.com/soerenchrist/mini_home/models"
+)
 
 func (db *SqliteDevicesDatabase) AddDevice(device models.Device) error {
 	tx, err := db.db.Begin()

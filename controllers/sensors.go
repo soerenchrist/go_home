@@ -35,17 +35,17 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 	deviceId := context.Param("deviceId")
 	var request models.CreateSensorRequest
 	if err := context.BindJSON(&request); err != nil {
-		context.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := c.validateSensor(request); err != nil {
-		context.JSON(400, gin.H{"error": err.Error()})
+		context.JSON(400, gin.H{"error": "Invalid JSON"})
 		return
 	}
 
 	if _, err := c.database.GetDevice(deviceId); err != nil {
 		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+
+	if err := c.validateSensor(request); err != nil {
+		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -76,7 +76,7 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		return
 	}
 
-	context.JSON(200, sensor)
+	context.JSON(201, sensor)
 }
 
 func (c *SensorsController) GetSensor(context *gin.Context) {
@@ -123,7 +123,7 @@ func (c *SensorsController) validateSensor(sensor models.CreateSensorRequest) er
 	}
 
 	if sensor.Type == models.SensorTypePolling && sensor.PollingInterval < 1 {
-		return &models.ValidationError{Message: "Polling interval must be at least 1"}
+		return &models.ValidationError{Message: "Polling interval must be greater than 0"}
 	}
 
 	if sensor.Type == models.SensorTypePolling {
