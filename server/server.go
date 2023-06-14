@@ -8,12 +8,13 @@ import (
 )
 
 func Init() {
-	database, err := db.NewDevicesDatabase("devices.db")
+
+	config := config.GetConfig()
+	databasePath := config.GetString("database.path")
+	database, err := db.NewDevicesDatabase(databasePath)
 	if err != nil {
 		panic(err)
 	}
-
-	config := config.GetConfig()
 	r := NewRouter(database)
 
 	port := config.GetString("server.port")
