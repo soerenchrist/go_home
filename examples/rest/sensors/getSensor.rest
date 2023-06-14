@@ -1,1 +1,1 @@
-GET http://localhost:8080/api/v1/devices/ebb2b5fe-479d-48d0-b80e-d16adf9d40ff/sensors/912f1f77-2c49-41d6-9ec6-d99a93ca4c65
+GET http://localhost:8080/api/v1/devices/54374129-23b4-417f-904a-8bd1637369f4/sensors/94d9aefe-4c0e-4d8c-b869-9374dcc408e1

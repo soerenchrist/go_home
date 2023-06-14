@@ -18,6 +18,11 @@ func NewSensorsController(database db.DevicesDatabase) *SensorsController {
 func (c *SensorsController) GetSensors(context *gin.Context) {
 	deviceId := context.Param("deviceId")
 
+	if _, err := c.database.GetDevice(deviceId); err != nil {
+		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+
 	sensors, err := c.database.ListSensors(deviceId)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
@@ -44,12 +49,18 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		return
 	}
 
+	if request.Type != models.SensorTypePolling {
+		request.Type = models.SensorTypeExternal
+	}
+
 	sensor := models.Sensor{
 		ID:       uuid.NewString(),
 		Name:     request.Name,
 		DeviceID: deviceId,
 		DataType: models.DataType(request.DataType),
 		Unit:     request.Unit,
+		Type:     request.Type,
+		IsActive: true,
 	}
 
 	err := c.database.AddSensor(sensor)

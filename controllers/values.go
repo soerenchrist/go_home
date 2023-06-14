@@ -78,5 +78,9 @@ func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, reque
 		}
 	}
 
+	if sensor.Type == models.SensorTypePolling {
+		return &models.ValidationError{Message: "Sensor data value is not allowed for polling sensors"}
+	}
+
 	return nil
 }

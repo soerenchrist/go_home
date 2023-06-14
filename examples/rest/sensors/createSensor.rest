@@ -1,4 +1,4 @@
-POST http://localhost:8080/api/v1/devices/ebb2b5fe-479d-48d0-b80e-d16adf9d40ff/sensors
+POST http://localhost:8080/api/v1/devices/54374129-23b4-417f-904a-8bd1637369f4/sensors
 Content-Type: "application/json"
     
 {

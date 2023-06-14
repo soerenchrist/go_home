@@ -121,22 +121,38 @@ func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
 }
 
 func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Sensor, error) {
-	stmt, err := db.db.Prepare("select name, data_type, unit from sensors where id = ? and device_id = ?")
+	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit from sensors where id = ? and device_id = ?")
 	if err != nil {
 		return models.Sensor{}, err
 	}
 
 	defer stmt.Close()
 
-	var name string
-	var dataType models.DataType
-	var unit string
-	err = stmt.QueryRow(sensorId, deviceId).Scan(&name, &dataType, &unit)
+	row := stmt.QueryRow(sensorId, deviceId)
+	var sensor models.Sensor
+	sensor, err = readSensor(row)
 	if err != nil {
 		return models.Sensor{}, err
 	}
 
-	return models.Sensor{ID: sensorId, DeviceID: deviceId, Name: name, DataType: dataType, Unit: unit}, nil
+	return sensor, nil
+}
+
+func readSensor(row interface {
+	Scan(dest ...interface{}) error
+}) (models.Sensor, error) {
+	var id string
+	var name string
+	var sensorType models.SensorType
+	var isActive bool
+	var dataType models.DataType
+	var deviceId string
+	var unit string
+	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit)
+	if err != nil {
+		return models.Sensor{}, err
+	}
+	return models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId, Type: sensorType, IsActive: isActive, Unit: unit}, nil
 }
 
 func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
@@ -160,7 +176,7 @@ func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
 }
 
 func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
-	rows, err := db.db.Query("select id, name, data_type, device_id, unit from sensors where device_id = ?", deviceId)
+	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit from sensors where device_id = ?", deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -169,16 +185,11 @@ func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, 
 
 	results := make([]models.Sensor, 0)
 	for rows.Next() {
-		var id string
-		var name string
-		var dataType models.DataType
-		var deviceId string
-		var unit string
-		err = rows.Scan(&id, &name, &dataType, &deviceId, &unit)
+		sensor, err := readSensor(rows)
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId})
+		results = append(results, sensor)
 	}
 
 	err = rows.Err()
@@ -195,14 +206,14 @@ func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, unit) values(?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, sensor_type, is_active, unit) values(?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Unit)
+	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Type, sensor.IsActive, sensor.Unit)
 	if err != nil {
 		return err
 	}
@@ -251,6 +262,8 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		name text,
 		data_type text,
 		unit text,
+		sensor_type text,
+		is_active integer,
 		foreign key(device_id) references devices(id) on delete cascade
 	);
 	`
