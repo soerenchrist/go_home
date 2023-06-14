@@ -9,7 +9,7 @@ import (
 
 func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	router := gin.New()
-	//router.Use(gin.Logger())
+	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	web.ServeHtml(router)
@@ -18,6 +18,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	devicesController := controllers.NewDevicesController(database)
 	sensorsController := controllers.NewSensorsController(database)
 	sensorDataController := controllers.NewSensorValuesController(database)
+	commandsController := controllers.NewCommandsController(database)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
@@ -37,6 +38,10 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.POST("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.PostSensorValue)
 	v1.GET("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.GetSensorValues)
 	v1.GET("/devices/:deviceId/sensors/:sensorId/current", sensorDataController.GetCurrentSensorValue)
+
+	v1.GET("/devices/:deviceId/commands", commandsController.GetCommands)
+	v1.GET("/devices/:deviceId/commands/:commandId", commandsController.GetCommand)
+	v1.POST("/devices/:deviceId/commands", commandsController.PostCommand)
 
 	return router
 }

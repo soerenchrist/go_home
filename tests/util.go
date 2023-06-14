@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/mini_home/db"
@@ -42,6 +43,7 @@ func CloseTestDatabase(database db.DevicesDatabase, filename string) {
 type DbValidator func(database db.DevicesDatabase)
 
 func recordCall(t *testing.T, url string, method string, body io.Reader, dbValidator DbValidator) *httptest.ResponseRecorder {
+	gin.DefaultWriter = io.Discard
 	w := httptest.NewRecorder()
 	filename := t.Name() + ".db"
 	database := CreateTestDatabase(filename)
