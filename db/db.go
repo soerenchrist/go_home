@@ -3,9 +3,10 @@ package db
 import "github.com/soerenchrist/mini_home/models"
 
 type DevicesDatabase interface {
-	Add(entity models.Device) error
-	Get(id string) (models.Device, error)
-	List() ([]models.Device, error)
+	AddDevice(entity models.Device) error
+	GetDevice(id string) (models.Device, error)
+	DeleteDevice(id string) error
+	ListDevices() ([]models.Device, error)
 	ListSensors(deviceId string) ([]models.Sensor, error)
 	AddSensor(sensor models.Sensor) error
 	Close() error

@@ -31,7 +31,7 @@ func (db *SqliteDevicesDatabase) Close() error {
 	return db.db.Close()
 }
 
-func (db *SqliteDevicesDatabase) Add(device models.Device) error {
+func (db *SqliteDevicesDatabase) AddDevice(device models.Device) error {
 	tx, err := db.db.Begin()
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (db *SqliteDevicesDatabase) Add(device models.Device) error {
 	return nil
 }
 
-func (db *SqliteDevicesDatabase) Get(id string) (models.Device, error) {
+func (db *SqliteDevicesDatabase) GetDevice(id string) (models.Device, error) {
 	stmt, err := db.db.Prepare("select id, name, last_reached from devices where id = ?")
 	if err != nil {
 		return models.Device{}, err
@@ -72,7 +72,27 @@ func (db *SqliteDevicesDatabase) Get(id string) (models.Device, error) {
 	return models.Device{ID: deviceId, Name: name, LastReached: lastReached}, nil
 }
 
-func (db *SqliteDevicesDatabase) List() ([]models.Device, error) {
+func (db *SqliteDevicesDatabase) DeleteDevice(id string) error {
+	stmt, err := db.db.Prepare("delete from devices where id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return &models.NotFoundError{Message: "Device not found"}
+	}
+
+	return nil
+}
+
+func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
 	rows, err := db.db.Query("select id, name, last_reached from devices")
 	if err != nil {
 		return nil, err

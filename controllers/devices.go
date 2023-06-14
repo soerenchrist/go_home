@@ -18,7 +18,7 @@ func NewDevicesController(database db.DevicesDatabase) *DevicesController {
 }
 
 func (c *DevicesController) GetDevices(context *gin.Context) {
-	devices, err := c.database.List()
+	devices, err := c.database.ListDevices()
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -44,12 +44,40 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 		LastReached: "Never",
 	}
 
-	err := c.database.Add(device)
+	err := c.database.AddDevice(device)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 	context.JSON(200, device)
+}
+
+func (c *DevicesController) GetDevice(context *gin.Context) {
+	id := context.Param("id")
+
+	device, err := c.database.GetDevice(id)
+	if err != nil {
+		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+	context.JSON(200, device)
+}
+
+func (c *DevicesController) DeleteDevice(context *gin.Context) {
+	id := context.Param("id")
+
+	err := c.database.DeleteDevice(id)
+
+	if notFound, isOk := err.(*models.NotFoundError); isOk {
+		context.JSON(404, gin.H{"error": notFound.Error()})
+		return
+	}
+
+	if err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	context.Status(204)
 }
 
 func (c *DevicesController) validateDevice(device models.CreateDeviceRequest) error {

@@ -1,1 +1,1 @@
-GET http://localhost:8080/api/v1/devices
+GET http://localhost:8080/api/v1/devices/
