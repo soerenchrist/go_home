@@ -28,3 +28,10 @@ const (
 	DataTypeFloat  DataType = "float"
 	DataTypeBool   DataType = "bool"
 )
+
+type SensorValue struct {
+	SensorID  string `json:"sensor_id"`
+	DeviceID  string `json:"device_id"`
+	Value     string `json:"value"`
+	Timestamp string `json:"timestamp"`
+}

@@ -211,6 +211,27 @@ func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
 	return nil
 }
 
+func (db *SqliteDevicesDatabase) AddSensorValue(data models.SensorValue) error {
+	tx, err := db.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("insert into sensor_values(sensor_id, device_id, timestamp, value) values(?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	if _, err = stmt.Exec(data.SensorID, data.DeviceID, data.Timestamp, data.Value); err != nil {
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
 func (db *SqliteDevicesDatabase) createTables() error {
 	createDevicesTableStmt := `
 	create table if not exists devices (
@@ -219,9 +240,7 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		last_reached text
 	);
 	`
-	_, err := db.db.Exec(createDevicesTableStmt)
-
-	if err != nil {
+	if _, err := db.db.Exec(createDevicesTableStmt); err != nil {
 		return err
 	}
 
@@ -232,10 +251,26 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		name text,
 		data_type text,
 		unit text,
-		foreign key(device_id) references devices(id)
+		foreign key(device_id) references devices(id) on delete cascade
 	);
 	`
 
-	_, err = db.db.Exec(createSensorsTableStmt)
-	return err
+	if _, err := db.db.Exec(createSensorsTableStmt); err != nil {
+		return err
+	}
+
+	createSensorDataTableStmt := `
+	create table if not exists sensor_values (
+		sensor_id text not null,
+		device_id text not null,
+		timestamp text not null,
+		value text not null,
+		foreign key(sensor_id) references sensors(id) on delete cascade,
+		foreign key(device_id) references devices(id) on delete cascade
+	);`
+
+	if _, err := db.db.Exec(createSensorDataTableStmt); err != nil {
+		return err
+	}
+	return nil
 }

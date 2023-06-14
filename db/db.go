@@ -11,5 +11,7 @@ type DevicesDatabase interface {
 	AddSensor(sensor models.Sensor) error
 	GetSensor(deviceId, sensorId string) (models.Sensor, error)
 	DeleteSensor(deviceId, sensorId string) error
+
+	AddSensorValue(sensorValue models.SensorValue) error
 	Close() error
 }

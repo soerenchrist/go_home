@@ -9,3 +9,8 @@ type CreateSensorRequest struct {
 	DataType DataType `json:"data_type"`
 	Unit     string   `json:"unit"`
 }
+
+type AddSensorValueRequest struct {
+	Value     string `json:"value"`
+	Timestamp string `json:"timestamp"`
+}
