@@ -61,6 +61,36 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 	context.JSON(200, sensor)
 }
 
+func (c *SensorsController) GetSensor(context *gin.Context) {
+	deviceId := context.Param("deviceId")
+	sensorId := context.Param("sensorId")
+
+	device, err := c.database.GetSensor(deviceId, sensorId)
+	if err != nil {
+		context.JSON(404, gin.H{"error": "Sensor not found"})
+		return
+	}
+	context.JSON(200, device)
+}
+
+func (c *SensorsController) DeleteSensor(context *gin.Context) {
+	deviceId := context.Param("deviceId")
+	sensorId := context.Param("sensorId")
+
+	err := c.database.DeleteSensor(deviceId, sensorId)
+
+	if notFound, isOk := err.(*models.NotFoundError); isOk {
+		context.JSON(404, gin.H{"error": notFound.Error()})
+		return
+	}
+
+	if err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	context.Status(204)
+}
+
 func (c *SensorsController) validateSensor(sensor models.CreateSensorRequest) error {
 	if len(sensor.Name) < 3 {
 		return &models.ValidationError{Message: "Name must be at least 3 characters long"}

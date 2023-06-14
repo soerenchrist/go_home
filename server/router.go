@@ -21,12 +21,14 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.GET("/health", health.Status)
 
 	v1.GET("/devices", devicesController.GetDevices)
-	v1.GET("/devices/:id/", devicesController.GetDevice)
+	v1.GET("/devices/:deviceId/", devicesController.GetDevice)
 	v1.POST("/devices", devicesController.PostDevice)
-	v1.DELETE("/devices/:id/", devicesController.DeleteDevice)
+	v1.DELETE("/devices/:deviceId/", devicesController.DeleteDevice)
 
-	v1.GET("/devices/:id/sensors", sensorsController.GetSensors)
-	v1.POST("/devices/:id/sensors", sensorsController.PostSensor)
+	v1.GET("/devices/:deviceId/sensors", sensorsController.GetSensors)
+	v1.POST("/devices/:deviceId/sensors", sensorsController.PostSensor)
+	v1.GET("/devices/:deviceId/sensors/:sensorId", sensorsController.GetSensor)
+	v1.DELETE("/devices/:deviceId/sensors/:sensorId", sensorsController.DeleteSensor)
 
 	return router
 }

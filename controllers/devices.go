@@ -53,7 +53,7 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 }
 
 func (c *DevicesController) GetDevice(context *gin.Context) {
-	id := context.Param("id")
+	id := context.Param("deviceId")
 
 	device, err := c.database.GetDevice(id)
 	if err != nil {
@@ -64,7 +64,7 @@ func (c *DevicesController) GetDevice(context *gin.Context) {
 }
 
 func (c *DevicesController) DeleteDevice(context *gin.Context) {
-	id := context.Param("id")
+	id := context.Param("deviceId")
 
 	err := c.database.DeleteDevice(id)
 

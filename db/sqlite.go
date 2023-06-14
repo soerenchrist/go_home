@@ -120,6 +120,45 @@ func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
 	return results, nil
 }
 
+func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Sensor, error) {
+	stmt, err := db.db.Prepare("select name, data_type, unit from sensors where id = ? and device_id = ?")
+	if err != nil {
+		return models.Sensor{}, err
+	}
+
+	defer stmt.Close()
+
+	var name string
+	var dataType models.DataType
+	var unit string
+	err = stmt.QueryRow(sensorId, deviceId).Scan(&name, &dataType, &unit)
+	if err != nil {
+		return models.Sensor{}, err
+	}
+
+	return models.Sensor{ID: sensorId, DeviceID: deviceId, Name: name, DataType: dataType, Unit: unit}, nil
+}
+
+func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
+	stmt, err := db.db.Prepare("delete from sensors where id = ? and device_id = ?")
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	res, err := stmt.Exec(sensorId, deviceId)
+	if err != nil {
+		return err
+	}
+
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return &models.NotFoundError{Message: "Sensor not found"}
+	}
+
+	return nil
+}
+
 func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
 	rows, err := db.db.Query("select id, name, data_type, device_id, unit from sensors where device_id = ?", deviceId)
 	if err != nil {
@@ -156,14 +195,14 @@ func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type) values(?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, unit) values(?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType)
+	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Unit)
 	if err != nil {
 		return err
 	}

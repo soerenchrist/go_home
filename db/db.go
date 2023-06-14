@@ -9,5 +9,7 @@ type DevicesDatabase interface {
 	ListDevices() ([]models.Device, error)
 	ListSensors(deviceId string) ([]models.Sensor, error)
 	AddSensor(sensor models.Sensor) error
+	GetSensor(deviceId, sensorId string) (models.Sensor, error)
+	DeleteSensor(deviceId, sensorId string) error
 	Close() error
 }
