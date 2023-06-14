@@ -24,6 +24,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.POST("/devices", devicesController.PostDevice)
 
 	v1.GET("/devices/:deviceId/sensors", sensorsController.GetSensors)
+	v1.POST("/devices/:deviceId/sensors", sensorsController.PostSensor)
 
 	return router
 }

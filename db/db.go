@@ -6,5 +6,6 @@ type DevicesDatabase interface {
 	Add(entity models.Device) error
 	List() ([]models.Device, error)
 	ListSensors(deviceId string) ([]models.Sensor, error)
+	AddSensor(sensor models.Sensor) error
 	Close() error
 }

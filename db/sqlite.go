@@ -110,6 +110,28 @@ func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, 
 	return results, nil
 }
 
+func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
+	tx, err := db.db.Begin()
+	if err != nil {
+		return err
+	}
+
+	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type) values(?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType)
+	if err != nil {
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}
+
 func (db *SqliteDevicesDatabase) createTables() error {
 	createDevicesTableStmt := `
 	create table if not exists devices (
