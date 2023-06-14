@@ -1,23 +1,24 @@
-package devices
+package db
 
 import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/soerenchrist/mini_home/models"
 )
 
-type SqliteDatabase struct {
+type SqliteDevicesDatabase struct {
 	db   *sql.DB
 	path string
 }
 
-func NewSqliteDatabase(path string) (*SqliteDatabase, error) {
+func NewDevicesDatabase(path string) (*SqliteDevicesDatabase, error) {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, err
 	}
 
-	database := &SqliteDatabase{path: path, db: db}
+	database := &SqliteDevicesDatabase{path: path, db: db}
 	err = database.createTables()
 	if err != nil {
 		return nil, err
@@ -26,11 +27,11 @@ func NewSqliteDatabase(path string) (*SqliteDatabase, error) {
 	return database, nil
 }
 
-func (db *SqliteDatabase) Close() error {
+func (db *SqliteDevicesDatabase) Close() error {
 	return db.db.Close()
 }
 
-func (db *SqliteDatabase) Add(device Device) error {
+func (db *SqliteDevicesDatabase) Add(device models.Device) error {
 	tx, err := db.db.Begin()
 	if err != nil {
 		return err
@@ -52,7 +53,7 @@ func (db *SqliteDatabase) Add(device Device) error {
 	return nil
 }
 
-func (db *SqliteDatabase) List() ([]Device, error) {
+func (db *SqliteDevicesDatabase) List() ([]models.Device, error) {
 	rows, err := db.db.Query("select id, name, last_reached from devices")
 	if err != nil {
 		return nil, err
@@ -60,7 +61,7 @@ func (db *SqliteDatabase) List() ([]Device, error) {
 
 	defer rows.Close()
 
-	results := make([]Device, 0)
+	results := make([]models.Device, 0)
 	for rows.Next() {
 		var id string
 		var name string
@@ -69,7 +70,7 @@ func (db *SqliteDatabase) List() ([]Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, Device{ID: id, Name: name, LastReached: lastReached})
+		results = append(results, models.Device{ID: id, Name: name, LastReached: lastReached})
 	}
 
 	err = rows.Err()
@@ -80,7 +81,7 @@ func (db *SqliteDatabase) List() ([]Device, error) {
 	return results, nil
 }
 
-func (db *SqliteDatabase) createTables() error {
+func (db *SqliteDevicesDatabase) createTables() error {
 	sqlStmt := `
 	create table if not exists devices (
 		id text not null primary key,

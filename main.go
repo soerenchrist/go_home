@@ -1,18 +1,23 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/mini_home/devices"
+	"flag"
+	"fmt"
+	"os"
+
+	"github.com/soerenchrist/mini_home/config"
+	"github.com/soerenchrist/mini_home/server"
 )
 
 func main() {
-	router := gin.Default()
+	environment := flag.String("e", "development", "")
+	flag.Usage = func() {
+		fmt.Println("Usage: mini_home -e <environment>")
+		os.Exit(1)
+	}
 
-	router.GET("/api/status", health)
-	devices.MapEndpoints(router)
-	router.Run()
-}
+	flag.Parse()
+	config.Init(*environment)
 
-func health(c *gin.Context) {
-	c.Status(200)
+	server.Init()
 }
