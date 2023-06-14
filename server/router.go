@@ -35,6 +35,8 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.DELETE("/devices/:deviceId/sensors/:sensorId", sensorsController.DeleteSensor)
 
 	v1.POST("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.PostSensorValue)
+	v1.GET("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.GetSensorValues)
+	v1.GET("/devices/:deviceId/sensors/:sensorId/current", sensorDataController.GetCurrentSensorValue)
 
 	return router
 }

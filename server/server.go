@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/mini_home/background"
 	"github.com/soerenchrist/mini_home/config"
 	"github.com/soerenchrist/mini_home/db"
@@ -40,6 +41,9 @@ func Init() {
 func openDatabase(path string) *sql.DB {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
+		panic(err)
+	}
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		panic(err)
 	}
 

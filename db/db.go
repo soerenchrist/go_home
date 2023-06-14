@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/soerenchrist/mini_home/models"
 )
@@ -19,6 +20,9 @@ type DevicesDatabase interface {
 	ListPollingSensors() ([]models.Sensor, error)
 
 	AddSensorValue(sensorValue models.SensorValue) error
+	GetSensorValuesSince(deviceId, sensorId string, timestamp time.Time) ([]models.SensorValue, error)
+	GetCurrentSensorValue(deviceId, sensorId string) (models.SensorValue, error)
+
 	Close() error
 	SeedDatabase()
 }

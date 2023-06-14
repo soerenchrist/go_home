@@ -1,1 +1,1 @@
-DELETE http://localhost:8080/api/v1/devices/ebb2b5fe-479d-48d0-b80e-d16adf9d40ff/sensors/912f1f77-2c49-41d6-9ec6-d99a93ca4c65
+DELETE http://localhost:8080/api/v1/devices/1/sensors/S1

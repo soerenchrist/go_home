@@ -1,6 +1,10 @@
 package db
 
-import "github.com/soerenchrist/mini_home/models"
+import (
+	"time"
+
+	"github.com/soerenchrist/mini_home/models"
+)
 
 func (db *SqliteDevicesDatabase) AddSensorValue(data models.SensorValue) error {
 	tx, err := db.db.Begin()
@@ -21,6 +25,59 @@ func (db *SqliteDevicesDatabase) AddSensorValue(data models.SensorValue) error {
 	tx.Commit()
 
 	return nil
+}
+
+func (db *SqliteDevicesDatabase) GetCurrentSensorValue(deviceId, sensorId string) (models.SensorValue, error) {
+	row := db.db.QueryRow("select sensor_id, device_id, timestamp, value from sensor_values where sensor_id = ? and device_id = ? order by timestamp desc limit 1", sensorId, deviceId)
+
+	var sid string
+	var did string
+	var timestamp string
+	var value string
+	if err := row.Scan(&sid, &did, &timestamp, &value); err != nil {
+		return models.SensorValue{}, err
+	}
+
+	return models.SensorValue{
+		SensorID:  sid,
+		DeviceID:  did,
+		Timestamp: timestamp,
+		Value:     value,
+	}, nil
+}
+
+func (db *SqliteDevicesDatabase) GetSensorValuesSince(deviceId, sensorId string, timestamp time.Time) ([]models.SensorValue, error) {
+	time_str := timestamp.Format(time.RFC3339)
+	rows, err := db.db.Query("select sensor_id, device_id, timestamp, value from sensor_values where timestamp > ? and device_id = ? and sensor_id = ?", time_str, deviceId, sensorId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	results := make([]models.SensorValue, 0)
+	for rows.Next() {
+		var sid string
+		var did string
+		var timestamp string
+		var value string
+		if err := rows.Scan(&sid, &did, &timestamp, &value); err != nil {
+			return nil, err
+		}
+		results = append(results, models.SensorValue{
+			SensorID:  sid,
+			DeviceID:  did,
+			Timestamp: timestamp,
+			Value:     value,
+		})
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 func (database *SqliteDevicesDatabase) createSensorValuesTable() error {
