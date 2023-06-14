@@ -7,4 +7,5 @@ type CreateDeviceRequest struct {
 type CreateSensorRequest struct {
 	Name     string   `json:"name"`
 	DataType DataType `json:"data_type"`
+	Unit     string   `json:"unit"`
 }

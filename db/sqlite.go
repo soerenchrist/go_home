@@ -82,7 +82,7 @@ func (db *SqliteDevicesDatabase) List() ([]models.Device, error) {
 }
 
 func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
-	rows, err := db.db.Query("select id, name, data_type, device_id from sensors where device_id = ?", deviceId)
+	rows, err := db.db.Query("select id, name, data_type, device_id, unit from sensors where device_id = ?", deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,8 @@ func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, 
 		var name string
 		var dataType models.DataType
 		var deviceId string
-		err = rows.Scan(&id, &name, &dataType, &deviceId)
+		var unit string
+		err = rows.Scan(&id, &name, &dataType, &deviceId, &unit)
 		if err != nil {
 			return nil, err
 		}
@@ -152,6 +153,7 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		device_id text not null,
 		name text,
 		data_type text,
+		unit text,
 		foreign key(device_id) references devices(id)
 	);
 	`

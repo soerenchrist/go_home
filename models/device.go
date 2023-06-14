@@ -17,6 +17,7 @@ type Sensor struct {
 	DeviceID string   `json:"device_id"`
 	Name     string   `json:"name"`
 	DataType DataType `json:"data_type"`
+	Unit     string   `json:"unit"`
 }
 
 type DataType string

@@ -44,6 +44,7 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		Name:     request.Name,
 		DeviceID: deviceId,
 		DataType: models.DataType(request.DataType),
+		Unit:     request.Unit,
 	}
 
 	err := c.database.AddSensor(sensor)
@@ -58,6 +59,10 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 func (c *SensorsController) validateSensor(sensor models.CreateSensorRequest) error {
 	if len(sensor.Name) < 3 {
 		return &models.ValidationError{Message: "Name must be at least 3 characters long"}
+	}
+
+	if len(sensor.Unit) > 0 && (sensor.DataType == models.DataTypeBool || sensor.DataType == models.DataTypeString) {
+		return &models.ValidationError{Message: "Unit is not allowed for this data type"}
 	}
 
 	return nil

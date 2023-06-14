@@ -1,6 +1,8 @@
-POST http://localhost:8080/api/v1/devices//
+POST http://localhost:8080/api/v1/devices/373ebfbb-996b-4581-b146-e377bbcecd4c/sensors
 Content-Type: "application/json"
     
 {
-    "name": "Device 1"
+    "name": "Sensor 1",
+    "data_type": "int",
+    "unit": "°C"
 }
