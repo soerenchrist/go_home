@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"time"
@@ -145,6 +146,12 @@ func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, reque
 
 	if !sensor.IsActive {
 		return &models.ValidationError{Message: "Sensor is not active"}
+	}
+
+	if len(request.Timestamp) > 0 {
+		if err := util.ValidateTimestamp(request.Timestamp); err != nil {
+			return &models.ValidationError{Message: fmt.Sprintf("%s is not a valid timestamp", request.Timestamp)}
+		}
 	}
 
 	return nil
