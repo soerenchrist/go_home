@@ -144,3 +144,33 @@ func TestCreateCommand_ShouldAddCommandToDatabase(t *testing.T) {
 	assert.Equal(t, command.PayloadTemplate, "on", "Response should contain payload template")
 	assert.Equal(t, command.Method, "POST")
 }
+
+func TestDeleteCommand_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
+	w := RecordDeleteCall(t, "/api/v1/devices/123/commands/C1")
+
+	assert.Equal(t, w.Code, 404)
+	t.Log(w.Body.String())
+	assertErrorMessageEquals(t, w.Body.Bytes(), "Device not found")
+}
+
+func TestDeleteCommand_ShouldReturn404_WhenCommandDoesNotExist(t *testing.T) {
+	w := RecordDeleteCall(t, "/api/v1/devices/1/commands/C2")
+
+	assert.Equal(t, w.Code, 404)
+	assertErrorMessageEquals(t, w.Body.Bytes(), "Command not found")
+}
+
+func TestDeleteCommand_ShouldDeleteCommand(t *testing.T) {
+	validator := func(database db.DevicesDatabase) {
+		commands, err := database.ListCommands("1")
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, len(commands), 0)
+	}
+
+	w := RecordDeleteCallWithDb(t, "/api/v1/devices/1/commands/C1", validator)
+
+	assert.Equal(t, w.Code, 204)
+}

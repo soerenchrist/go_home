@@ -42,6 +42,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.GET("/devices/:deviceId/commands", commandsController.GetCommands)
 	v1.GET("/devices/:deviceId/commands/:commandId", commandsController.GetCommand)
 	v1.POST("/devices/:deviceId/commands", commandsController.PostCommand)
+	v1.DELETE("/devices/:deviceId/commands/:commandId", commandsController.DeleteCommand)
 
 	return router
 }

@@ -85,6 +85,23 @@ func (c *CommandsController) PostCommand(context *gin.Context) {
 	context.JSON(201, command)
 }
 
+func (c *CommandsController) DeleteCommand(context *gin.Context) {
+	deviceId := context.Param("deviceId")
+	commandId := context.Param("commandId")
+
+	if _, err := c.database.GetDevice(deviceId); err != nil {
+		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+
+	if err := c.database.DeleteCommand(deviceId, commandId); err != nil {
+		context.JSON(404, gin.H{"error": "Command not found"})
+		return
+	}
+
+	context.Status(204)
+}
+
 func (c *CommandsController) validateCommand(command *models.CreateCommandRequest) error {
 	if command.Name == "" {
 		return &models.ValidationError{Message: "Name is required"}
