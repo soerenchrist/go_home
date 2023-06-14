@@ -102,7 +102,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		return
 	}
 
-	context.JSON(200, sensorValue)
+	context.JSON(201, sensorValue)
 }
 
 func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*models.Sensor, *models.Device, error) {
@@ -128,20 +128,20 @@ func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*mode
 func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, request *models.AddSensorValueRequest) error {
 	if sensor.DataType == models.DataTypeInt {
 		if _, err := strconv.Atoi(request.Value); err != nil {
-			return &models.ValidationError{Message: "Sensor data value is not an int"}
+			return &models.ValidationError{Message: "Sensor value is not an int"}
 		}
 	} else if sensor.DataType == models.DataTypeFloat {
 		if _, err := strconv.ParseFloat(request.Value, 64); err != nil {
-			return &models.ValidationError{Message: "Sensor data value is not a float"}
+			return &models.ValidationError{Message: "Sensor value is not a float"}
 		}
 	} else if sensor.DataType == models.DataTypeBool {
 		if _, err := strconv.ParseBool(request.Value); err != nil {
-			return &models.ValidationError{Message: "Sensor data value is not a bool"}
+			return &models.ValidationError{Message: "Sensor value is not a bool"}
 		}
 	}
 
 	if sensor.Type == models.SensorTypePolling {
-		return &models.ValidationError{Message: "Sensor data value is not allowed for polling sensors"}
+		return &models.ValidationError{Message: "Sending values to a polling sensor is not allowed"}
 	}
 
 	if !sensor.IsActive {
@@ -150,7 +150,7 @@ func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, reque
 
 	if len(request.Timestamp) > 0 {
 		if err := util.ValidateTimestamp(request.Timestamp); err != nil {
-			return &models.ValidationError{Message: fmt.Sprintf("%s is not a valid timestamp", request.Timestamp)}
+			return &models.ValidationError{Message: fmt.Sprintf("%s is not a valid RFC3339 timestamp", request.Timestamp)}
 		}
 	}
 

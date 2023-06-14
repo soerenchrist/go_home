@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/go-ping/ping"
 	"github.com/soerenchrist/mini_home/models"
@@ -27,6 +28,7 @@ func (s *PingStrategy) PerformRequest(sensor *models.Sensor) (*models.SensorValu
 	}
 
 	pinger.Count = 3
+	pinger.Timeout = 5 * time.Second
 	err = pinger.Run()
 	if err != nil {
 		return nil, err
