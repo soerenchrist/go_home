@@ -82,5 +82,9 @@ func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, reque
 		return &models.ValidationError{Message: "Sensor data value is not allowed for polling sensors"}
 	}
 
+	if !sensor.IsActive {
+		return &models.ValidationError{Message: "Sensor is not active"}
+	}
+
 	return nil
 }
