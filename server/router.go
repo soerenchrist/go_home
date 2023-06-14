@@ -9,7 +9,7 @@ import (
 
 func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	router := gin.New()
-	router.Use(gin.Logger())
+	//router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	web.ServeHtml(router)
@@ -25,9 +25,9 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.GET("/health", health.Status)
 
 	v1.GET("/devices", devicesController.GetDevices)
-	v1.GET("/devices/:deviceId/", devicesController.GetDevice)
+	v1.GET("/devices/:deviceId", devicesController.GetDevice)
 	v1.POST("/devices", devicesController.PostDevice)
-	v1.DELETE("/devices/:deviceId/", devicesController.DeleteDevice)
+	v1.DELETE("/devices/:deviceId", devicesController.DeleteDevice)
 
 	v1.GET("/devices/:deviceId/sensors", sensorsController.GetSensors)
 	v1.POST("/devices/:deviceId/sensors", sensorsController.PostSensor)

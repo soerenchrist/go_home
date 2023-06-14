@@ -11,7 +11,6 @@ import (
 )
 
 func Init() {
-
 	config := config.GetConfig()
 	databasePath := config.GetString("database.path")
 
@@ -43,10 +42,9 @@ func openDatabase(path string) *sql.DB {
 	if err != nil {
 		panic(err)
 	}
-	/*if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
+	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
 		panic(err)
 	}
-	*/
 
 	return db
 }

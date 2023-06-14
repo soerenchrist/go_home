@@ -49,7 +49,7 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
-	context.JSON(200, device)
+	context.JSON(201, device)
 }
 
 func (c *DevicesController) GetDevice(context *gin.Context) {
