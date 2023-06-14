@@ -39,6 +39,11 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		return
 	}
 
+	if _, err := c.database.Get(deviceId); err != nil {
+		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+
 	sensor := models.Sensor{
 		ID:       uuid.NewString(),
 		Name:     request.Name,

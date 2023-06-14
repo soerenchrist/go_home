@@ -53,6 +53,25 @@ func (db *SqliteDevicesDatabase) Add(device models.Device) error {
 	return nil
 }
 
+func (db *SqliteDevicesDatabase) Get(id string) (models.Device, error) {
+	stmt, err := db.db.Prepare("select id, name, last_reached from devices where id = ?")
+	if err != nil {
+		return models.Device{}, err
+	}
+
+	defer stmt.Close()
+
+	var deviceId string
+	var name string
+	var lastReached string
+	err = stmt.QueryRow(id).Scan(&deviceId, &name, &lastReached)
+	if err != nil {
+		return models.Device{}, err
+	}
+
+	return models.Device{ID: deviceId, Name: name, LastReached: lastReached}, nil
+}
+
 func (db *SqliteDevicesDatabase) List() ([]models.Device, error) {
 	rows, err := db.db.Query("select id, name, last_reached from devices")
 	if err != nil {
