@@ -4,12 +4,15 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/soerenchrist/mini_home/controllers"
 	"github.com/soerenchrist/mini_home/db"
+	"github.com/soerenchrist/mini_home/web"
 )
 
 func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
+	web.ServeHtml(router)
 
 	health := new(controllers.HealthController)
 	devicesController := controllers.NewDevicesController(database)

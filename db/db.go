@@ -1,6 +1,10 @@
 package db
 
-import "github.com/soerenchrist/mini_home/models"
+import (
+	"database/sql"
+
+	"github.com/soerenchrist/mini_home/models"
+)
 
 type DevicesDatabase interface {
 	AddDevice(entity models.Device) error
@@ -17,4 +21,51 @@ type DevicesDatabase interface {
 	AddSensorValue(sensorValue models.SensorValue) error
 	Close() error
 	SeedDatabase()
+}
+
+type SqliteDevicesDatabase struct {
+	db *sql.DB
+}
+
+func NewDevicesDatabase(db *sql.DB) (*SqliteDevicesDatabase, error) {
+	database := &SqliteDevicesDatabase{db: db}
+	if err := database.createTables(); err != nil {
+		return nil, err
+	}
+
+	return database, nil
+}
+
+func (db *SqliteDevicesDatabase) Close() error {
+	return db.db.Close()
+}
+
+func (db *SqliteDevicesDatabase) createTables() error {
+
+	if err := db.createDeviceTable(); err != nil {
+		return err
+	}
+	if err := db.createSensorsTable(); err != nil {
+		return err
+	}
+	if err := db.createSensorValuesTable(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (database *SqliteDevicesDatabase) SeedDatabase() {
+	device1 := models.Device{ID: "1", Name: "My Device 1"}
+	sensor1 := models.Sensor{ID: "S1", Name: "Temperature", DeviceID: "1", DataType: models.DataTypeFloat, Type: models.SensorTypeExternal, IsActive: true, Unit: "Celsius", PollingInterval: 0}
+	sensor2 := models.Sensor{ID: "S2", Name: "Availability", DeviceID: "1", DataType: models.DataTypeBool, Type: models.SensorTypePolling, IsActive: true, Unit: "", PollingInterval: 10}
+
+	device2 := models.Device{ID: "2", Name: "My Device 2"}
+	sensor3 := models.Sensor{ID: "S3", Name: "Filling Level", DeviceID: "2", DataType: models.DataTypeInt, Type: models.SensorTypeExternal, IsActive: true, Unit: "%", PollingInterval: 0}
+
+	database.AddDevice(device1)
+	database.AddDevice(device2)
+
+	database.AddSensor(sensor1)
+	database.AddSensor(sensor2)
+	database.AddSensor(sensor3)
 }
