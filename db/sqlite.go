@@ -81,14 +81,59 @@ func (db *SqliteDevicesDatabase) List() ([]models.Device, error) {
 	return results, nil
 }
 
+func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
+	rows, err := db.db.Query("select id, name, data_type, device_id from sensors where device_id = ?", deviceId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	results := make([]models.Sensor, 0)
+	for rows.Next() {
+		var id string
+		var name string
+		var dataType models.DataType
+		var deviceId string
+		err = rows.Scan(&id, &name, &dataType, &deviceId)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId})
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func (db *SqliteDevicesDatabase) createTables() error {
-	sqlStmt := `
+	createDevicesTableStmt := `
 	create table if not exists devices (
 		id text not null primary key,
 		name text,
 		last_reached text
 	);
 	`
-	_, err := db.db.Exec(sqlStmt)
+	_, err := db.db.Exec(createDevicesTableStmt)
+
+	if err != nil {
+		return err
+	}
+
+	createSensorsTableStmt := `
+	create table if not exists sensors (
+		id text not null primary key,
+		device_id text not null,
+		name text,
+		data_type text,
+		foreign key(device_id) references devices(id)
+	);
+	`
+
+	_, err = db.db.Exec(createSensorsTableStmt)
 	return err
 }

@@ -13,6 +13,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 
 	health := new(controllers.HealthController)
 	devicesController := controllers.NewDevicesController(database)
+	sensorsController := controllers.NewSensorsController(database)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
@@ -21,6 +22,8 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 
 	v1.GET("/devices", devicesController.GetDevices)
 	v1.POST("/devices", devicesController.PostDevice)
+
+	v1.GET("/devices/:deviceId/sensors", sensorsController.GetSensors)
 
 	return router
 }
