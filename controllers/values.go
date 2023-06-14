@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/soerenchrist/mini_home/db"
 	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/mini_home/util"
 )
 
 type SensorValuesController struct {
@@ -84,7 +85,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 	}
 
 	if request.Timestamp == "" {
-		request.Timestamp = getTimestamp()
+		request.Timestamp = util.GetTimestamp()
 	}
 
 	sensorValue := models.SensorValue{
@@ -121,10 +122,6 @@ func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*mode
 	}
 
 	return &sensor, &device, nil
-}
-
-func getTimestamp() string {
-	return time.Now().Format(time.RFC3339)
 }
 
 func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, request *models.AddSensorValueRequest) error {

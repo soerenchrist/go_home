@@ -53,14 +53,21 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		request.Type = models.SensorTypeExternal
 	}
 
+	if request.Type == models.SensorTypePolling {
+		request.PollingStrategy = models.PollingStrategyPing
+	}
+
 	sensor := models.Sensor{
-		ID:       uuid.NewString(),
-		Name:     request.Name,
-		DeviceID: deviceId,
-		DataType: models.DataType(request.DataType),
-		Unit:     request.Unit,
-		Type:     request.Type,
-		IsActive: true,
+		ID:              uuid.NewString(),
+		Name:            request.Name,
+		DeviceID:        deviceId,
+		DataType:        models.DataType(request.DataType),
+		Unit:            request.Unit,
+		Type:            request.Type,
+		PollingInterval: request.PollingInterval,
+		PollingEndpoint: request.PollingEndpoint,
+		PollingStrategy: request.PollingStrategy,
+		IsActive:        true,
 	}
 
 	err := c.database.AddSensor(sensor)
@@ -117,6 +124,16 @@ func (c *SensorsController) validateSensor(sensor models.CreateSensorRequest) er
 
 	if sensor.Type == models.SensorTypePolling && sensor.PollingInterval < 1 {
 		return &models.ValidationError{Message: "Polling interval must be at least 1"}
+	}
+
+	if sensor.Type == models.SensorTypePolling {
+		if sensor.PollingStrategy != models.PollingStrategyPing {
+			return &models.ValidationError{Message: "Invalid polling strategy"}
+		}
+
+		if sensor.PollingStrategy == models.PollingStrategyPing && len(sensor.PollingEndpoint) == 0 {
+			return &models.ValidationError{Message: "Polling endpoint is required"}
+		}
 	}
 
 	return nil

@@ -3,7 +3,7 @@ package db
 import "github.com/soerenchrist/mini_home/models"
 
 func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Sensor, error) {
-	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where id = ? and device_id = ?")
+	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy from sensors where id = ? and device_id = ?")
 	if err != nil {
 		return models.Sensor{}, err
 	}
@@ -21,7 +21,7 @@ func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Se
 }
 
 func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, error) {
-	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where device_id = ?", deviceId)
+	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy from sensors where device_id = ?", deviceId)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, 
 }
 
 func (db *SqliteDevicesDatabase) ListPollingSensors() ([]models.Sensor, error) {
-	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval from sensors where sensor_type = 'polling'")
+	rows, err := db.db.Query("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy from sensors where sensor_type = 'polling'")
 	if err != nil {
 		return nil, err
 	}
@@ -76,14 +76,14 @@ func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, sensor_type, is_active, unit, polling_interval) values(?, ?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("insert into sensors(id, name, device_id, data_type, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Type, sensor.IsActive, sensor.Unit, sensor.PollingInterval)
+	_, err = stmt.Exec(sensor.ID, sensor.Name, sensor.DeviceID, sensor.DataType, sensor.Type, sensor.IsActive, sensor.Unit, sensor.PollingInterval, sensor.PollingEndpoint, sensor.PollingStrategy)
 	if err != nil {
 		return err
 	}
@@ -123,12 +123,24 @@ func readSensor(row interface {
 	var deviceId string
 	var unit string
 	var pollingInterval int
-	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit, &pollingInterval)
+	var pollingEndpoint string
+	var pollingStrategy models.PollingStrategy
+	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit, &pollingInterval, &pollingEndpoint, &pollingStrategy)
 
 	if err != nil {
 		return models.Sensor{}, err
 	}
-	return models.Sensor{ID: id, Name: name, DataType: dataType, DeviceID: deviceId, Type: sensorType, IsActive: isActive, Unit: unit, PollingInterval: pollingInterval}, nil
+	return models.Sensor{
+		ID:              id,
+		Name:            name,
+		DataType:        dataType,
+		DeviceID:        deviceId,
+		Type:            sensorType,
+		IsActive:        isActive,
+		Unit:            unit,
+		PollingInterval: pollingInterval,
+		PollingEndpoint: pollingEndpoint,
+		PollingStrategy: pollingStrategy}, nil
 }
 
 func (database *SqliteDevicesDatabase) createSensorsTable() error {
@@ -143,6 +155,8 @@ func (database *SqliteDevicesDatabase) createSensorsTable() error {
 		sensor_type text,
 		is_active integer,
 		polling_interval integer,
+		polling_endpoint text,
+		polling_strategy text,
 		foreign key(device_id) references devices(id) on delete cascade
 	);
 	`

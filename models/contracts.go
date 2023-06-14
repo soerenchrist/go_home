@@ -5,11 +5,13 @@ type CreateDeviceRequest struct {
 }
 
 type CreateSensorRequest struct {
-	Name            string     `json:"name"`
-	DataType        DataType   `json:"data_type"`
-	Unit            string     `json:"unit"`
-	Type            SensorType `json:"type"`
-	PollingInterval int        `json:"polling_interval"`
+	Name            string          `json:"name"`
+	DataType        DataType        `json:"data_type"`
+	Unit            string          `json:"unit"`
+	Type            SensorType      `json:"type"`
+	PollingInterval int             `json:"polling_interval"`
+	PollingEndpoint string          `json:"polling_endpoint"`
+	PollingStrategy PollingStrategy `json:"polling_strategy"`
 }
 
 type AddSensorValueRequest struct {
