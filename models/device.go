@@ -53,12 +53,3 @@ type SensorValue struct {
 	Value     string `json:"value"`
 	Timestamp string `json:"timestamp"`
 }
-
-type Command struct {
-	ID              string `json:"id"`
-	DeviceID        string `json:"device_id"`
-	Name            string `json:"name"`
-	PayloadTemplate string `json:"payload"`
-	Endpoint        string `json:"endpoint"`
-	Method          string `json:"method"`
-}

@@ -1,6 +1,9 @@
 package server
 
 import (
+	"io"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/soerenchrist/mini_home/controllers"
 	"github.com/soerenchrist/mini_home/db"
@@ -42,7 +45,19 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.GET("/devices/:deviceId/commands", commandsController.GetCommands)
 	v1.GET("/devices/:deviceId/commands/:commandId", commandsController.GetCommand)
 	v1.POST("/devices/:deviceId/commands", commandsController.PostCommand)
+	v1.POST("/devices/:deviceId/commands/:commandId/invoke", commandsController.InvokeCommand)
 	v1.DELETE("/devices/:deviceId/commands/:commandId", commandsController.DeleteCommand)
 
+	router.POST("/test", func(context *gin.Context) {
+		body, err := io.ReadAll(context.Request.Body)
+		if err != nil {
+			log.Printf("Error reading body: %s", err.Error())
+			context.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		log.Printf("%s", body)
+
+		context.JSON(200, gin.H{"status": "ok"})
+	})
 	return router
 }

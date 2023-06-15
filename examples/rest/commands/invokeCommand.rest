@@ -1,0 +1,6 @@
+POST http://localhost:8080/api/v1/devices/1/commands/C1/invoke
+Content-Type: application/json
+
+{
+    "payload": "Hello World!"
+}

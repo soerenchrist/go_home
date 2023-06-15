@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"io"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/soerenchrist/mini_home/db"
@@ -100,6 +103,54 @@ func (c *CommandsController) DeleteCommand(context *gin.Context) {
 	}
 
 	context.Status(204)
+}
+
+func (c *CommandsController) InvokeCommand(context *gin.Context) {
+	deviceId := context.Param("deviceId")
+	commandId := context.Param("commandId")
+
+	var params models.CommandParameters
+
+	content_length := context.Request.Header["Content-Length"]
+	log.Printf("Content-Length: %s", content_length[0])
+	if content_length != nil && content_length[0] != "0" {
+		if err := context.BindJSON(&params); err != nil {
+			log.Println("Failed to bind JSON", err)
+		}
+	}
+
+	var device models.Device
+	var err error
+	if device, err = c.database.GetDevice(deviceId); err != nil {
+		context.JSON(404, gin.H{"error": "Device not found"})
+		return
+	}
+
+	command, err := c.database.GetCommand(deviceId, commandId)
+	if err != nil {
+		context.JSON(404, gin.H{"error": "Command not found"})
+		return
+	}
+
+	var result struct {
+		Response   string `json:"response"`
+		StatusCode int    `json:"statusCode"`
+	}
+	res, err := command.Invoke(&device, &params)
+	if err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	result.Response = string(body)
+	result.StatusCode = res.StatusCode
+
+	context.JSON(200, result)
 }
 
 func (c *CommandsController) validateCommand(command *models.CreateCommandRequest) error {
