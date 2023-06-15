@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	frontend "github.com/soerenchrist/mini_home/app"
 	"github.com/soerenchrist/mini_home/controllers"
 	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/web"
 )
 
 func NewRouter(database db.DevicesDatabase) *gin.Engine {
@@ -15,7 +15,8 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	web.ServeHtml(router)
+	app := frontend.NewApp(router, database)
+	app.ServeHtml()
 
 	health := new(controllers.HealthController)
 	devicesController := controllers.NewDevicesController(database)

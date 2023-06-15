@@ -1,0 +1,13 @@
+{{define "head"}}
+{{end}}
+
+
+{{define "content"}}
+    <h1 class="page_title">{{.title}}</h1>
+    <h4>Your devices:</h4>
+    <ul>
+        {{range .devices}}
+            <li><a href="/devices/{{.ID}}">{{.Name}}</a></li>
+        {{end}}
+    </ul>
+{{end}}

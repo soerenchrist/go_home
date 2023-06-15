@@ -1,0 +1,16 @@
+<!-- /views/admin/master.html -->
+<!doctype html>
+
+<html>
+    <head>
+        <title>{{.title}}</title>
+        <link rel="stylesheet" href="/static/main.css">
+        {{template "head" .}}
+    </head>
+
+    <body>
+        {{template "content" .}}
+        <hr>
+        {{include "layouts/footer"}}
+    </body>
+</html>
