@@ -12,8 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/server"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/server"
 )
 
 func CreateTestDatabase(filename string) db.DevicesDatabase {

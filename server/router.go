@@ -5,9 +5,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	frontend "github.com/soerenchrist/mini_home/app"
-	"github.com/soerenchrist/mini_home/controllers"
-	"github.com/soerenchrist/mini_home/db"
+	frontend "github.com/soerenchrist/go_home/app"
+	"github.com/soerenchrist/go_home/controllers"
+	"github.com/soerenchrist/go_home/db"
 )
 
 func NewRouter(database db.DevicesDatabase) *gin.Engine {

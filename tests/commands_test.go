@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/magiconair/properties/assert"
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 )
 
 func TestListCommands_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {

@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/soerenchrist/mini_home/config"
-	"github.com/soerenchrist/mini_home/server"
+	"github.com/soerenchrist/go_home/config"
+	"github.com/soerenchrist/go_home/server"
 )
 
 func main() {
 	environment := flag.String("e", "development", "")
 	flag.Usage = func() {
-		fmt.Println("Usage: mini_home -e <environment>")
+		fmt.Println("Usage: go_home -e <environment>")
 		os.Exit(1)
 	}
 

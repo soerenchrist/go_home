@@ -1,6 +1,6 @@
 package db
 
-import "github.com/soerenchrist/mini_home/models"
+import "github.com/soerenchrist/go_home/models"
 
 func (db *SqliteDevicesDatabase) GetCommand(deviceId, commandId string) (*models.Command, error) {
 	row := db.db.QueryRow("select id, name, payload_template, endpoint, method from commands where id = ? and device_id = ?", commandId, deviceId)

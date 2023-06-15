@@ -3,7 +3,7 @@ package db
 import (
 	"time"
 
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/models"
 )
 
 func (db *SqliteDevicesDatabase) AddSensorValue(data *models.SensorValue) error {

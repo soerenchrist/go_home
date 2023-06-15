@@ -1,6 +1,6 @@
 package db
 
-import "github.com/soerenchrist/mini_home/models"
+import "github.com/soerenchrist/go_home/models"
 
 func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, error) {
 	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy from sensors where id = ? and device_id = ?")

@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
-	"github.com/soerenchrist/mini_home/models"
-	"github.com/soerenchrist/mini_home/util"
+	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/util"
 )
 
 type RequestStrategy interface {

@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/magiconair/properties/assert"
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
-	"github.com/soerenchrist/mini_home/server"
-	"github.com/soerenchrist/mini_home/util"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/server"
+	"github.com/soerenchrist/go_home/util"
 )
 
 func TestAddSensorValue_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {

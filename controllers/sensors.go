@@ -3,8 +3,8 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 )
 
 type SensorsController struct {

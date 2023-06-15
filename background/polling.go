@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 )
 
 func PollSensorValues(database db.DevicesDatabase) {

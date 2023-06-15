@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
-	"github.com/soerenchrist/mini_home/util"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/util"
 )
 
 type SensorValuesController struct {

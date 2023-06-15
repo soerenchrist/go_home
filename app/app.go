@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/mini_home/db"
+	"github.com/soerenchrist/go_home/db"
 )
 
 type App struct {

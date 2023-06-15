@@ -4,7 +4,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/soerenchrist/mini_home/templating"
+	"github.com/soerenchrist/go_home/templating"
 )
 
 var template = `{

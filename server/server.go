@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/soerenchrist/mini_home/background"
-	"github.com/soerenchrist/mini_home/config"
-	"github.com/soerenchrist/mini_home/db"
+	"github.com/soerenchrist/go_home/background"
+	"github.com/soerenchrist/go_home/config"
+	"github.com/soerenchrist/go_home/db"
 )
 
 func Init() {

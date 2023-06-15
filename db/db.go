@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/models"
 )
 
 type DevicesDatabase interface {

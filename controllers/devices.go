@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"github.com/soerenchrist/mini_home/db"
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 
 	"github.com/google/uuid"
 

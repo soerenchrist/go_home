@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/soerenchrist/mini_home/models"
+	"github.com/soerenchrist/go_home/models"
 )
 
 func (db *SqliteDevicesDatabase) AddDevice(device *models.Device) error {

@@ -5,8 +5,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/soerenchrist/mini_home/templating"
-	"github.com/soerenchrist/mini_home/util"
+	"github.com/soerenchrist/go_home/templating"
+	"github.com/soerenchrist/go_home/util"
 )
 
 type CommandParameters map[string]string
