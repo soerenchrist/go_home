@@ -1,13 +1,11 @@
 package models
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
-	"text/template"
 
+	"github.com/soerenchrist/mini_home/templating"
 	"github.com/soerenchrist/mini_home/util"
 )
 
@@ -39,16 +37,14 @@ func (c *Command) Invoke(device *Device, params *CommandParameters) (*http.Respo
 	return http.DefaultClient.Do(req)
 }
 
-func (c *Command) prepareBody(device *Device, params *CommandParameters) (io.Reader, error) {
-	if len(c.PayloadTemplate) == 0 {
+func (command *Command) prepareBody(device *Device, params *CommandParameters) (io.Reader, error) {
+	if len(command.PayloadTemplate) == 0 {
 		return nil, nil
 	}
 
-	t := template.Must(template.New("payload").Parse(c.PayloadTemplate))
-
-	var data CommandParameters = make(map[string]string)
-	data["command_id"] = c.ID
-	data["command_name"] = c.Name
+	var data templating.TemplateParameters = make(map[string]string)
+	data["command_id"] = command.ID
+	data["command_name"] = command.Name
 	data["device_id"] = device.ID
 	data["device_name"] = device.Name
 	data["now"] = util.GetTimestamp()
@@ -57,14 +53,7 @@ func (c *Command) prepareBody(device *Device, params *CommandParameters) (io.Rea
 		data[fmt.Sprintf("p_%s", key)] = value
 	}
 
-	var b bytes.Buffer
-
-	err := t.Execute(&b, data)
-	if err != nil {
-		return nil, err
-	}
-
-	return strings.NewReader(b.String()), nil
+	return templating.PrepareCommandTemplate(command.PayloadTemplate, &data)
 }
 
 type InvocationResult struct {
