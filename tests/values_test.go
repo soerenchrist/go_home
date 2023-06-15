@@ -157,7 +157,7 @@ func TestGetCurrentSensorValue_ShouldReturnSensorValue_WhenOneExists(t *testing.
 	database := CreateTestDatabase(filename)
 	defer CloseTestDatabase(database, filename)
 	timestamp := "2019-01-01T00:00:00Z"
-	err := database.AddSensorValue(models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestamp})
+	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestamp})
 	if err != nil {
 		t.Error(err)
 	}
@@ -200,7 +200,7 @@ func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *tes
 
 	timestampOneHourAgo := getTimestamp(time.Now().Add(-1*time.Hour - 1*time.Minute))
 
-	err := database.AddSensorValue(models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
+	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
 		t.Error(err)
 	}
@@ -222,7 +222,7 @@ func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.
 
 	timestampOneHourAgo := getTimestamp(time.Now().Add(-1*time.Hour - 1*time.Minute))
 
-	err := database.AddSensorValue(models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
+	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
 		t.Error(err)
 	}

@@ -4,7 +4,7 @@ import (
 	"github.com/soerenchrist/mini_home/models"
 )
 
-func (db *SqliteDevicesDatabase) AddDevice(device models.Device) error {
+func (db *SqliteDevicesDatabase) AddDevice(device *models.Device) error {
 	tx, err := db.db.Begin()
 	if err != nil {
 		return err
@@ -26,10 +26,10 @@ func (db *SqliteDevicesDatabase) AddDevice(device models.Device) error {
 	return nil
 }
 
-func (db *SqliteDevicesDatabase) GetDevice(id string) (models.Device, error) {
+func (db *SqliteDevicesDatabase) GetDevice(id string) (*models.Device, error) {
 	stmt, err := db.db.Prepare("select id, name, last_reached from devices where id = ?")
 	if err != nil {
-		return models.Device{}, err
+		return nil, err
 	}
 
 	defer stmt.Close()
@@ -39,10 +39,10 @@ func (db *SqliteDevicesDatabase) GetDevice(id string) (models.Device, error) {
 	var lastReached string
 	err = stmt.QueryRow(id).Scan(&deviceId, &name, &lastReached)
 	if err != nil {
-		return models.Device{}, err
+		return nil, err
 	}
 
-	return models.Device{ID: deviceId, Name: name, LastReached: lastReached}, nil
+	return &models.Device{ID: deviceId, Name: name, LastReached: lastReached}, nil
 }
 
 func (db *SqliteDevicesDatabase) DeleteDevice(id string) error {

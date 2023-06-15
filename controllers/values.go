@@ -89,7 +89,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		request.Timestamp = util.GetTimestamp()
 	}
 
-	sensorValue := models.SensorValue{
+	sensorValue := &models.SensorValue{
 		Value:     request.Value,
 		Timestamp: request.Timestamp,
 		DeviceID:  device.ID,
@@ -109,8 +109,8 @@ func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*mode
 	deviceId := context.Param("deviceId")
 	sensorId := context.Param("sensorId")
 
-	var device models.Device
-	var sensor models.Sensor
+	var device *models.Device
+	var sensor *models.Sensor
 
 	var err error
 
@@ -122,7 +122,7 @@ func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*mode
 		return &models.Sensor{}, &models.Device{}, &models.NotFoundError{Message: "Sensor not found"}
 	}
 
-	return &sensor, &device, nil
+	return sensor, device, nil
 }
 
 func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, request *models.AddSensorValueRequest) error {

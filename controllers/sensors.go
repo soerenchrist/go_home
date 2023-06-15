@@ -57,7 +57,7 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		request.PollingStrategy = models.PollingStrategyPing
 	}
 
-	sensor := models.Sensor{
+	sensor := &models.Sensor{
 		ID:              uuid.NewString(),
 		Name:            request.Name,
 		DeviceID:        deviceId,

@@ -44,7 +44,7 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 		LastReached: "Never",
 	}
 
-	err := c.database.AddDevice(device)
+	err := c.database.AddDevice(&device)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return

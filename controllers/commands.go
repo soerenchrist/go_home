@@ -80,7 +80,7 @@ func (c *CommandsController) PostCommand(context *gin.Context) {
 		Method:          request.Method,
 	}
 
-	if err := c.database.AddCommand(command); err != nil {
+	if err := c.database.AddCommand(&command); err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
@@ -118,7 +118,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 		}
 	}
 
-	var device models.Device
+	var device *models.Device
 	var err error
 	if device, err = c.database.GetDevice(deviceId); err != nil {
 		context.JSON(404, gin.H{"error": "Device not found"})
@@ -132,7 +132,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	}
 
 	var result models.InvocationResult
-	res, err := command.Invoke(&device, &params)
+	res, err := command.Invoke(device, &params)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return

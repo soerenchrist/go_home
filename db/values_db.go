@@ -6,7 +6,7 @@ import (
 	"github.com/soerenchrist/mini_home/models"
 )
 
-func (db *SqliteDevicesDatabase) AddSensorValue(data models.SensorValue) error {
+func (db *SqliteDevicesDatabase) AddSensorValue(data *models.SensorValue) error {
 	tx, err := db.db.Begin()
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (db *SqliteDevicesDatabase) AddSensorValue(data models.SensorValue) error {
 	return nil
 }
 
-func (db *SqliteDevicesDatabase) GetCurrentSensorValue(deviceId, sensorId string) (models.SensorValue, error) {
+func (db *SqliteDevicesDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
 	row := db.db.QueryRow("select sensor_id, device_id, timestamp, value from sensor_values where sensor_id = ? and device_id = ? order by timestamp desc limit 1", sensorId, deviceId)
 
 	var sid string
@@ -35,10 +35,10 @@ func (db *SqliteDevicesDatabase) GetCurrentSensorValue(deviceId, sensorId string
 	var timestamp string
 	var value string
 	if err := row.Scan(&sid, &did, &timestamp, &value); err != nil {
-		return models.SensorValue{}, err
+		return nil, err
 	}
 
-	return models.SensorValue{
+	return &models.SensorValue{
 		SensorID:  sid,
 		DeviceID:  did,
 		Timestamp: timestamp,

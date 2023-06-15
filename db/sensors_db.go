@@ -2,19 +2,19 @@ package db
 
 import "github.com/soerenchrist/mini_home/models"
 
-func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (models.Sensor, error) {
+func (db *SqliteDevicesDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, error) {
 	stmt, err := db.db.Prepare("select id, name, data_type, device_id, sensor_type, is_active, unit, polling_interval, polling_endpoint, polling_strategy from sensors where id = ? and device_id = ?")
 	if err != nil {
-		return models.Sensor{}, err
+		return nil, err
 	}
 
 	defer stmt.Close()
 
 	row := stmt.QueryRow(sensorId, deviceId)
-	var sensor models.Sensor
+	var sensor *models.Sensor
 	sensor, err = readSensor(row)
 	if err != nil {
-		return models.Sensor{}, err
+		return nil, err
 	}
 
 	return sensor, nil
@@ -34,7 +34,7 @@ func (db *SqliteDevicesDatabase) ListSensors(deviceId string) ([]models.Sensor, 
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, sensor)
+		results = append(results, *sensor)
 	}
 
 	err = rows.Err()
@@ -59,7 +59,7 @@ func (db *SqliteDevicesDatabase) ListPollingSensors() ([]models.Sensor, error) {
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, sensor)
+		results = append(results, *sensor)
 	}
 
 	err = rows.Err()
@@ -70,7 +70,7 @@ func (db *SqliteDevicesDatabase) ListPollingSensors() ([]models.Sensor, error) {
 	return results, nil
 }
 
-func (db *SqliteDevicesDatabase) AddSensor(sensor models.Sensor) error {
+func (db *SqliteDevicesDatabase) AddSensor(sensor *models.Sensor) error {
 	tx, err := db.db.Begin()
 	if err != nil {
 		return err
@@ -114,7 +114,7 @@ func (db *SqliteDevicesDatabase) DeleteSensor(deviceId, sensorId string) error {
 
 func readSensor(row interface {
 	Scan(dest ...interface{}) error
-}) (models.Sensor, error) {
+}) (*models.Sensor, error) {
 	var id string
 	var name string
 	var sensorType models.SensorType
@@ -128,9 +128,9 @@ func readSensor(row interface {
 	err := row.Scan(&id, &name, &dataType, &deviceId, &sensorType, &isActive, &unit, &pollingInterval, &pollingEndpoint, &pollingStrategy)
 
 	if err != nil {
-		return models.Sensor{}, err
+		return nil, err
 	}
-	return models.Sensor{
+	return &models.Sensor{
 		ID:              id,
 		Name:            name,
 		DataType:        dataType,

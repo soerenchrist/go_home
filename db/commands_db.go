@@ -2,12 +2,12 @@ package db
 
 import "github.com/soerenchrist/mini_home/models"
 
-func (db *SqliteDevicesDatabase) GetCommand(deviceId, commandId string) (models.Command, error) {
+func (db *SqliteDevicesDatabase) GetCommand(deviceId, commandId string) (*models.Command, error) {
 	row := db.db.QueryRow("select id, name, payload_template, endpoint, method from commands where id = ? and device_id = ?", commandId, deviceId)
 
 	command, err := readCommand(row)
 	if err != nil {
-		return models.Command{}, err
+		return nil, err
 	}
 
 	return command, nil
@@ -28,7 +28,7 @@ func (db *SqliteDevicesDatabase) ListCommands(deviceId string) ([]models.Command
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, command)
+		results = append(results, *command)
 	}
 
 	err = rows.Err()
@@ -39,7 +39,7 @@ func (db *SqliteDevicesDatabase) ListCommands(deviceId string) ([]models.Command
 	return results, nil
 }
 
-func (db *SqliteDevicesDatabase) AddCommand(command models.Command) error {
+func (db *SqliteDevicesDatabase) AddCommand(command *models.Command) error {
 	stmt, err := db.db.Prepare("insert into commands(id, device_id, name, payload_template, endpoint, method) values(?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return err
@@ -77,15 +77,15 @@ func (db *SqliteDevicesDatabase) DeleteCommand(deviceId, commandId string) error
 
 func readCommand(row interface {
 	Scan(dest ...interface{}) error
-}) (models.Command, error) {
+}) (*models.Command, error) {
 	var id, name, payloadTemplate, endpoint, method string
 	err := row.Scan(&id, &name, &payloadTemplate, &endpoint, &method)
 
 	if err != nil {
-		return models.Command{}, err
+		return nil, err
 	}
 
-	return models.Command{
+	return &models.Command{
 		ID:              id,
 		Name:            name,
 		PayloadTemplate: payloadTemplate,

@@ -50,7 +50,7 @@ func readChannel(database db.DevicesDatabase, channel chan models.Sensor) {
 			log.Printf("Error polling sensor %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
-		err = database.AddSensorValue(*result)
+		err = database.AddSensorValue(result)
 		if err != nil {
 			log.Printf("Failed to save polling result %s: %s\n", sensor.ID, err.Error())
 			continue
