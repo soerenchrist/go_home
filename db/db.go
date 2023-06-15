@@ -70,7 +70,7 @@ func (database *SqliteDevicesDatabase) SeedDatabase() {
 	device1 := models.Device{ID: "1", Name: "My Device 1"}
 	sensor1 := models.Sensor{ID: "S1", Name: "Temperature", DeviceID: "1", DataType: models.DataTypeFloat, Type: models.SensorTypeExternal, IsActive: true, Unit: "Celsius", PollingInterval: 0}
 	sensor2 := models.Sensor{ID: "S2", Name: "Availability", DeviceID: "1", DataType: models.DataTypeBool, Type: models.SensorTypePolling, IsActive: true, Unit: "", PollingInterval: 10, PollingEndpoint: "localhost", PollingStrategy: "ping"}
-	template := `{"device": "${device_id}", "command": "${command_id}", "payload": "${p_payload}"}`
+	template := `{"device": "{{.device_id}}", "command": "{{.command_id}}", "payload": "{{.p_payload}}"}`
 	command1 := models.Command{ID: "C1", Name: "Turn on", DeviceID: "1", PayloadTemplate: template, Endpoint: "http://localhost:8080/echo", Method: "POST"}
 
 	device2 := models.Device{ID: "2", Name: "My Device 2"}

@@ -1,10 +1,12 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"text/template"
 
 	"github.com/soerenchrist/mini_home/util"
 )
@@ -25,7 +27,11 @@ func (c *Command) String() string {
 }
 
 func (c *Command) Invoke(device *Device, params *CommandParameters) (*http.Response, error) {
-	req, err := http.NewRequest(c.Method, c.Endpoint, c.prepareBody(device, params))
+	body, err := c.prepareBody(device, params)
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequest(c.Method, c.Endpoint, body)
 	if err != nil {
 		return nil, err
 	}
@@ -33,22 +39,32 @@ func (c *Command) Invoke(device *Device, params *CommandParameters) (*http.Respo
 	return http.DefaultClient.Do(req)
 }
 
-func (c *Command) prepareBody(device *Device, params *CommandParameters) io.Reader {
+func (c *Command) prepareBody(device *Device, params *CommandParameters) (io.Reader, error) {
 	if len(c.PayloadTemplate) == 0 {
-		return nil
+		return nil, nil
 	}
 
-	template := strings.ReplaceAll(c.PayloadTemplate, "${command_id}", c.ID)
-	template = strings.ReplaceAll(template, "${command_name}", c.Name)
-	template = strings.ReplaceAll(template, "${device_id}", device.ID)
-	template = strings.ReplaceAll(template, "${device_name}", device.Name)
-	template = strings.ReplaceAll(template, "${now}", util.GetTimestamp())
+	t := template.Must(template.New("payload").Parse(c.PayloadTemplate))
+
+	var data CommandParameters = make(map[string]string)
+	data["command_id"] = c.ID
+	data["command_name"] = c.Name
+	data["device_id"] = device.ID
+	data["device_name"] = device.Name
+	data["now"] = util.GetTimestamp()
 
 	for key, value := range *params {
-		template = strings.ReplaceAll(template, fmt.Sprintf("${p_%s}", key), value)
+		data[fmt.Sprintf("p_%s", key)] = value
 	}
 
-	return strings.NewReader(template)
+	var b bytes.Buffer
+
+	err := t.Execute(&b, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.NewReader(b.String()), nil
 }
 
 type InvocationResult struct {
