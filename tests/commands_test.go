@@ -174,3 +174,17 @@ func TestDeleteCommand_ShouldDeleteCommand(t *testing.T) {
 
 	assert.Equal(t, w.Code, 204)
 }
+
+func TestInvokeCommand_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
+	w := RecordPostCall(t, "/api/v1/devices/123/commands/C1/invoke", "")
+
+	assert.Equal(t, w.Code, 404)
+	assertErrorMessageEquals(t, w.Body.Bytes(), "Device not found")
+}
+
+func TestInvokeCommand_ShouldReturn404_WhenCommandDoesNotExist(t *testing.T) {
+	w := RecordPostCall(t, "/api/v1/devices/1/commands/C2/invoke", "")
+
+	assert.Equal(t, w.Code, 404)
+	assertErrorMessageEquals(t, w.Body.Bytes(), "Command not found")
+}

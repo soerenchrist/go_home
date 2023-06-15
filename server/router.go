@@ -48,16 +48,19 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.POST("/devices/:deviceId/commands/:commandId/invoke", commandsController.InvokeCommand)
 	v1.DELETE("/devices/:deviceId/commands/:commandId", commandsController.DeleteCommand)
 
-	router.POST("/test", func(context *gin.Context) {
-		body, err := io.ReadAll(context.Request.Body)
-		if err != nil {
-			log.Printf("Error reading body: %s", err.Error())
-			context.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		log.Printf("%s", body)
-
-		context.JSON(200, gin.H{"status": "ok"})
-	})
+	router.POST("/echo", echo)
 	return router
+}
+
+func echo(context *gin.Context) {
+	body, err := io.ReadAll(context.Request.Body)
+	if err != nil {
+		log.Printf("Error reading body: %s", err.Error())
+		context.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	context.Status(200)
+	context.Header("Content-Type", "application/json")
+	context.Writer.Write(body)
 }

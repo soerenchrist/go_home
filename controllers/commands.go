@@ -112,7 +112,6 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	var params models.CommandParameters
 
 	content_length := context.Request.Header["Content-Length"]
-	log.Printf("Content-Length: %s", content_length[0])
 	if content_length != nil && content_length[0] != "0" {
 		if err := context.BindJSON(&params); err != nil {
 			log.Println("Failed to bind JSON", err)
@@ -132,10 +131,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 		return
 	}
 
-	var result struct {
-		Response   string `json:"response"`
-		StatusCode int    `json:"statusCode"`
-	}
+	var result models.InvocationResult
 	res, err := command.Invoke(&device, &params)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})

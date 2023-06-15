@@ -50,3 +50,8 @@ func (c *Command) prepareBody(device *Device, params *CommandParameters) io.Read
 
 	return strings.NewReader(template)
 }
+
+type InvocationResult struct {
+	Response   string `json:"response"`
+	StatusCode int    `json:"statusCode"`
+}
