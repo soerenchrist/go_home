@@ -13,11 +13,12 @@ import (
 )
 
 type SensorValuesController struct {
-	database db.DevicesDatabase
+	database       db.DevicesDatabase
+	outputBindings chan models.SensorValue
 }
 
-func NewSensorValuesController(database db.DevicesDatabase) *SensorValuesController {
-	return &SensorValuesController{database: database}
+func NewSensorValuesController(database db.DevicesDatabase, outputBindings chan models.SensorValue) *SensorValuesController {
+	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 
 func (c *SensorValuesController) GetSensorValues(context *gin.Context) {
@@ -102,6 +103,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		return
 	}
 
+	c.outputBindings <- *sensorValue
 	context.JSON(201, sensorValue)
 }
 

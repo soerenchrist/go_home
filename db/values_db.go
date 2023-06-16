@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/soerenchrist/go_home/models"
@@ -44,6 +45,38 @@ func (db *SqliteDevicesDatabase) GetCurrentSensorValue(deviceId, sensorId string
 		Timestamp: timestamp,
 		Value:     value,
 	}, nil
+}
+
+func (db *SqliteDevicesDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
+	rows, err := db.db.Query("select sensor_id, device_id, timestamp, value from sensor_values where sensor_id = ? and device_id = ? order by timestamp desc limit 2", sensorId, deviceId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	results := make([]models.SensorValue, 0)
+	if !rows.Next() {
+		var sid string
+		var did string
+		var timestamp string
+		var value string
+		if err := rows.Scan(&sid, &did, &timestamp, &value); err != nil {
+			return nil, err
+		}
+
+		results = append(results, models.SensorValue{
+			SensorID:  sid,
+			DeviceID:  did,
+			Timestamp: timestamp,
+			Value:     value,
+		})
+	}
+
+	if len(results) < 2 {
+		return nil, fmt.Errorf("no previous value found for sensor %v on device %v", sensorId, deviceId)
+	}
+
+	return &results[1], nil
 }
 
 func (db *SqliteDevicesDatabase) GetSensorValuesSince(deviceId, sensorId string, timestamp time.Time) ([]models.SensorValue, error) {

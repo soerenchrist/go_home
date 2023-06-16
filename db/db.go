@@ -23,6 +23,7 @@ type DevicesDatabase interface {
 	AddSensorValue(sensorValue *models.SensorValue) error
 	GetSensorValuesSince(deviceId, sensorId string, timestamp time.Time) ([]models.SensorValue, error)
 	GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
+	GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
 
 	AddCommand(command *models.Command) error
 	GetCommand(deviceId, commandId string) (*models.Command, error)

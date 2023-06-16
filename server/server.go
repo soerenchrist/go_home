@@ -28,13 +28,13 @@ func Init() {
 		database.SeedDatabase()
 	}
 
-	sensorsChan := make(chan models.Sensor)
+	outputBindings := make(chan models.SensorValue, 10)
 	rulesEngine := evaluation.NewRulesEngine(database)
 
-	go rulesEngine.ListenForValues(sensorsChan)
+	go rulesEngine.ListenForValues(outputBindings)
 	go background.PollSensorValues(database)
 
-	r := NewRouter(database)
+	r := NewRouter(database, outputBindings)
 
 	port := config.GetString("server.port")
 	host := config.GetString("server.host")

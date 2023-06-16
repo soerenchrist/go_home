@@ -8,9 +8,10 @@ import (
 	frontend "github.com/soerenchrist/go_home/app"
 	"github.com/soerenchrist/go_home/controllers"
 	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 )
 
-func NewRouter(database db.DevicesDatabase) *gin.Engine {
+func NewRouter(database db.DevicesDatabase, outputBindings chan models.SensorValue) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -21,7 +22,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	health := new(controllers.HealthController)
 	devicesController := controllers.NewDevicesController(database)
 	sensorsController := controllers.NewSensorsController(database)
-	sensorDataController := controllers.NewSensorValuesController(database)
+	sensorValuesController := controllers.NewSensorValuesController(database, outputBindings)
 	commandsController := controllers.NewCommandsController(database)
 	rulesController := controllers.NewRulesController(database)
 
@@ -40,9 +41,9 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.GET("/devices/:deviceId/sensors/:sensorId", sensorsController.GetSensor)
 	v1.DELETE("/devices/:deviceId/sensors/:sensorId", sensorsController.DeleteSensor)
 
-	v1.POST("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.PostSensorValue)
-	v1.GET("/devices/:deviceId/sensors/:sensorId/values", sensorDataController.GetSensorValues)
-	v1.GET("/devices/:deviceId/sensors/:sensorId/current", sensorDataController.GetCurrentSensorValue)
+	v1.POST("/devices/:deviceId/sensors/:sensorId/values", sensorValuesController.PostSensorValue)
+	v1.GET("/devices/:deviceId/sensors/:sensorId/values", sensorValuesController.GetSensorValues)
+	v1.GET("/devices/:deviceId/sensors/:sensorId/current", sensorValuesController.GetCurrentSensorValue)
 
 	v1.GET("/devices/:deviceId/commands", commandsController.GetCommands)
 	v1.GET("/devices/:deviceId/commands/:commandId", commandsController.GetCommand)

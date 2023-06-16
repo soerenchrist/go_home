@@ -22,6 +22,7 @@ type UsedSensorValue struct {
 }
 
 type RulesEngine struct {
+	database    db.DevicesDatabase
 	lookupTable map[string][]rules.Rule
 }
 
@@ -30,14 +31,20 @@ func NewRulesEngine(database db.DevicesDatabase) *RulesEngine {
 	if err != nil {
 		panic(err)
 	}
-	return &RulesEngine{lookupTable: lookupTable}
+	return &RulesEngine{lookupTable: lookupTable, database: database}
 }
 
-func (engine *RulesEngine) ListenForValues(sensorsChannel chan models.Sensor) {
+func (engine *RulesEngine) ListenForValues(sensorsChannel chan models.SensorValue) {
 	log.Println("Listening for sensor values...")
 	for {
 		sensor := <-sensorsChannel
-		log.Printf("Received sensor value: %v\n", sensor)
+
+		key := sensor.DeviceID + "." + sensor.SensorID
+		if rules, ok := engine.lookupTable[key]; ok {
+			for _, rule := range rules {
+				log.Printf("Evaluating rule %v\n", rule)
+			}
+		}
 	}
 }
 

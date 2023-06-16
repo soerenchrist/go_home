@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/server"
 )
 
@@ -51,7 +52,8 @@ func recordCall(t *testing.T, url string, method string, body io.Reader, dbValid
 	if dbValidator != nil {
 		defer dbValidator(database)
 	}
-	router := server.NewRouter(database)
+	outputBindings := make(chan models.SensorValue, 10)
+	router := server.NewRouter(database, outputBindings)
 
 	req := httptest.NewRequest(method, url, body)
 
