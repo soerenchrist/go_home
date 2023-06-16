@@ -44,7 +44,7 @@ func TestInvalidWhenExpressions(t *testing.T) {
 			Then: rules.ThenExpression(""),
 		}
 
-		_, err := rule.ReadDependentSensors()
+		_, err := rule.ReadAst()
 
 		if err == nil {
 			t.Errorf("Expression %s should give error, but got none", expression)
@@ -63,49 +63,59 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 	expressions := []string{
 		"when ${1.S1.curr} > 1",
 		"when ${1.S1.curr} > 1 AND ${1.S1.prev} < 2",
-		"when ${1.S2.curr} != true AND ${1.S2.prev} == false",
+		"when ${1.S2.curr} != true OR ${1.S2.prev} == false",
 	}
 
-	expectedResult := [][]rules.DependentSensor{
+	expectedResult := []rules.Node{
 		{
-			{
+			Expression: &rules.Expression{
 				SensorId: "S1",
 				DeviceId: "1",
 				Variable: "curr",
-				Operator: rules.Operator(">"),
+				Operator: ">",
 				Value:    "1",
 			},
 		},
 		{
-			{
-				SensorId: "S1",
-				DeviceId: "1",
-				Variable: "curr",
-				Operator: rules.Operator(">"),
-				Value:    "1",
+			Left: &rules.Node{
+				Expression: &rules.Expression{
+					SensorId: "S1",
+					DeviceId: "1",
+					Variable: "curr",
+					Operator: ">",
+					Value:    "1",
+				},
 			},
-			{
-				SensorId: "S1",
-				DeviceId: "1",
-				Variable: "prev",
-				Operator: rules.Operator("<"),
-				Value:    "2",
+			BooleanOperator: "AND",
+			Right: &rules.Node{
+				Expression: &rules.Expression{
+					SensorId: "S1",
+					DeviceId: "1",
+					Variable: "prev",
+					Operator: "<",
+					Value:    "2",
+				},
 			},
 		},
 		{
-			{
-				SensorId: "S2",
-				DeviceId: "1",
-				Variable: "curr",
-				Operator: rules.Operator("!="),
-				Value:    "true",
+			Left: &rules.Node{
+				Expression: &rules.Expression{
+					SensorId: "S2",
+					DeviceId: "1",
+					Variable: "curr",
+					Operator: "!=",
+					Value:    "true",
+				},
 			},
-			{
-				SensorId: "S2",
-				DeviceId: "1",
-				Variable: "prev",
-				Operator: rules.Operator("=="),
-				Value:    "false",
+			BooleanOperator: "OR",
+			Right: &rules.Node{
+				Expression: &rules.Expression{
+					SensorId: "S2",
+					DeviceId: "1",
+					Variable: "prev",
+					Operator: "==",
+					Value:    "false",
+				},
 			},
 		},
 	}
@@ -118,7 +128,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 			Then: rules.ThenExpression(""),
 		}
 
-		result, err := rule.ReadDependentSensors()
+		result, err := rule.ReadAst()
 
 		if err != nil {
 			t.Errorf("Expression %s, got error, expected none", expression)
@@ -127,35 +137,61 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 
 		expectedResult := expectedResult[i]
 
-		assertResult(t, expectedResult, result)
+		assertResult(t, &expectedResult, result)
 	}
 }
 
-func assertResult(t *testing.T, expected []rules.DependentSensor, got []rules.DependentSensor) {
-	if len(expected) != len(got) {
-		t.Errorf("Expected %d results, but got %d", len(expected), len(got))
-		return
+func assertResult(t *testing.T, expected, got *rules.Node) {
+	// assert current node
+	assertSensor(t, expected.Expression, got.Expression)
+	if expected.BooleanOperator != got.BooleanOperator {
+		t.Errorf("Expected boolean operator '%s', but got '%s'", expected.BooleanOperator, got.BooleanOperator)
 	}
 
-	for i, expectedSensor := range expected {
-		if expectedSensor.SensorId != got[i].SensorId {
-			t.Errorf("Expected sensorId '%s', but got '%s'", expectedSensor.SensorId, got[i].SensorId)
-		}
+	if expected.Left == nil && got.Left != nil {
+		t.Errorf("Expected left node to be nil, but got '%v'", got.Left)
+	}
 
-		if expectedSensor.DeviceId != got[i].DeviceId {
-			t.Errorf("Expected deviceId '%s', but got '%s'", expectedSensor.DeviceId, got[i].DeviceId)
-		}
+	// assert left node
+	if expected.Left != nil {
+		assertResult(t, expected.Left, got.Left)
+	}
 
-		if expectedSensor.Variable != got[i].Variable {
-			t.Errorf("Expected variable '%s', but got '%s'", expectedSensor.Variable, got[i].Variable)
-		}
+	if expected.Right == nil && got.Right != nil {
+		t.Errorf("Expected right node to be nil, but got '%v'", got.Right)
+	}
 
-		if expectedSensor.Operator != got[i].Operator {
-			t.Errorf("Expected operator '%s', but got '%s'", expectedSensor.Operator, got[i].Operator)
-		}
+	// assert right node
+	if expected.Right != nil {
+		assertResult(t, expected.Right, got.Right)
+	}
+}
 
-		if expectedSensor.Value != got[i].Value {
-			t.Errorf("Expected value '%s', but got '%s'", expectedSensor.Value, got[i].Value)
-		}
+func assertSensor(t *testing.T, expected, got *rules.Expression) {
+	if expected == nil && got == nil {
+		return
+	}
+	if (expected == nil) != (got == nil) {
+		t.Errorf("Expected sensor '%v', but got '%v'", expected, got)
+		return
+	}
+	if expected.SensorId != got.SensorId {
+		t.Errorf("Expected sensorId '%s', but got '%s'", expected.SensorId, got.SensorId)
+	}
+
+	if expected.DeviceId != got.DeviceId {
+		t.Errorf("Expected deviceId '%s', but got '%s'", expected.DeviceId, got.DeviceId)
+	}
+
+	if expected.Variable != got.Variable {
+		t.Errorf("Expected variable '%s', but got '%s'", expected.Variable, got.Variable)
+	}
+
+	if expected.Operator != got.Operator {
+		t.Errorf("Expected operator '%s', but got '%s'", expected.Operator, got.Operator)
+	}
+
+	if expected.Value != got.Value {
+		t.Errorf("Expected value '%s', but got '%s'", expected.Value, got.Value)
 	}
 }

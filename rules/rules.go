@@ -16,8 +16,9 @@ type Rule struct {
 }
 
 type Operator string
+type BooleanOperator string
 
-type DependentSensor struct {
+type Expression struct {
 	SensorId string
 	DeviceId string
 	Variable string
@@ -25,7 +26,14 @@ type DependentSensor struct {
 	Value    string
 }
 
-func (rule *Rule) ReadDependentSensors() ([]DependentSensor, error) {
+type Node struct {
+	Left            *Node
+	Right           *Node
+	BooleanOperator BooleanOperator
+	Expression      *Expression
+}
+
+func (rule *Rule) ReadAst() (*Node, error) {
 	tokens := strings.Split(string(rule.When), " ")
 
 	if len(tokens) == 0 || tokens[0] == "" {
@@ -36,59 +44,72 @@ func (rule *Rule) ReadDependentSensors() ([]DependentSensor, error) {
 		return nil, fmt.Errorf("invalid rule: %s - Expected WHEN keyword", rule.When)
 	}
 
-	return rule.evaluateExpression(tokens[1:])
+	expression, err := rule.evaluateExpression(tokens[1:])
+	return expression, err
 }
 
-func (rule *Rule) evaluateExpression(tokens []string) ([]DependentSensor, error) {
+func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
 	if len(tokens) == 0 {
 		return nil, fmt.Errorf("invalid rule: %s - When Expression is empty", rule.When)
 	}
 	currentIndex := 0
 
-	results := make([]DependentSensor, 0)
-	for {
-		token := tokens[currentIndex]
-		if !rule.isVariable(token) {
-			return nil, fmt.Errorf("invalid rule: %s - Expected variable", rule.When)
-		}
-
-		deviceId, sensorId, variable, err := rule.readVariable(token)
-		if err != nil {
-			return nil, err
-		}
-
-		currentIndex++
-		if len(tokens) == currentIndex || !rule.isOperator(tokens[currentIndex]) {
-			return nil, fmt.Errorf("invalid rule: %s - Expected operator", rule.When)
-		}
-		operator := Operator(tokens[currentIndex])
-
-		currentIndex++
-		if len(tokens) == currentIndex {
-			return nil, fmt.Errorf("invalid rule: %s - Expected value", rule.When)
-		}
-
-		value := tokens[currentIndex]
-		results = append(results, DependentSensor{
-			SensorId: sensorId,
-			DeviceId: deviceId,
-			Variable: variable,
-			Operator: operator,
-			Value:    value,
-		})
-
-		currentIndex++
-
-		if len(tokens) == currentIndex {
-			break
-		}
-
-		if !rule.isBooleanOperator(tokens[currentIndex]) {
-			return nil, fmt.Errorf("invalid rule: %s - Expected boolean operator", rule.When)
-		}
-		currentIndex++
+	token := tokens[currentIndex]
+	if !rule.isVariable(token) {
+		return nil, fmt.Errorf("invalid rule: %s - Expected variable", rule.When)
 	}
-	return results, nil
+
+	deviceId, sensorId, variable, err := rule.readVariable(token)
+	if err != nil {
+		return nil, err
+	}
+
+	currentIndex++
+	if len(tokens) == currentIndex || !rule.isOperator(tokens[currentIndex]) {
+		return nil, fmt.Errorf("invalid rule: %s - Expected operator", rule.When)
+	}
+	operator := Operator(tokens[currentIndex])
+
+	currentIndex++
+	if len(tokens) == currentIndex {
+		return nil, fmt.Errorf("invalid rule: %s - Expected value", rule.When)
+	}
+
+	value := tokens[currentIndex]
+	sensor := &Expression{
+		SensorId: sensorId,
+		DeviceId: deviceId,
+		Variable: variable,
+		Operator: operator,
+		Value:    value,
+	}
+
+	currentIndex++
+
+	// Expression is finished
+	if len(tokens) == currentIndex {
+		return &Node{
+			Expression: sensor,
+		}, nil
+	}
+
+	// Expression is not finished
+	if !rule.isBooleanOperator(tokens[currentIndex]) {
+		return nil, fmt.Errorf("invalid rule: %s - Expected boolean operator", rule.When)
+	}
+
+	boolOp := BooleanOperator(tokens[currentIndex])
+	rightSide, err := rule.evaluateExpression(tokens[currentIndex+1:])
+	if err != nil {
+		return nil, err
+	}
+	return &Node{
+		Left: &Node{
+			Expression: sensor,
+		},
+		BooleanOperator: boolOp,
+		Right:           rightSide,
+	}, nil
 }
 
 func (rule *Rule) isVariable(token string) bool {
