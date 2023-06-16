@@ -8,6 +8,8 @@ import (
 	"github.com/soerenchrist/go_home/background"
 	"github.com/soerenchrist/go_home/config"
 	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/rules/evaluation"
 )
 
 func Init() {
@@ -17,17 +19,21 @@ func Init() {
 	sqlite := openDatabase(databasePath)
 
 	database, err := db.NewDevicesDatabase(sqlite)
+	if err != nil {
+		panic(err)
+	}
 
 	seed := config.GetBool("database.seed")
 	if seed {
 		database.SeedDatabase()
 	}
 
-	if err != nil {
-		panic(err)
-	}
+	sensorsChan := make(chan models.Sensor)
+	rulesEngine := evaluation.NewRulesEngine(database)
 
+	go rulesEngine.ListenForValues(sensorsChan)
 	go background.PollSensorValues(database)
+
 	r := NewRouter(database)
 
 	port := config.GetString("server.port")
