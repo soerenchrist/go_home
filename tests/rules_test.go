@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/magiconair/properties/assert"
@@ -34,7 +35,42 @@ func TestPostRule_ShouldReturn400_WhenJsonIsInvalid(t *testing.T) {
 	assert.Equal(t, w.Code, 400)
 }
 
+func TestPostRule_ShouldReturn400WhenRuleIsInvalid(t *testing.T) {
+	invalidRules := []rules.Rule{
+		{
+			Name: "",
+			When: rules.WhenExpression("when ${1.S1.current} < 20"),
+			Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+		},
+		{
+			Name: "Test",
+			When: rules.WhenExpression(""),
+			Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+		},
+	}
+
+	expectedMessages := []string{
+		"Name is required",
+		"invalid rule: When Expression is empty",
+	}
+
+	for i, rule := range invalidRules {
+		body, err := json.Marshal(rule)
+		if err != nil {
+			t.Errorf("Error while marshalling rule: %s", err.Error())
+			return
+		}
+
+		w := RecordPostCall(t, "/api/v1/rules", string(body))
+
+		assert.Equal(t, w.Code, 400)
+
+		assertErrorMessageEquals(t, w.Body.Bytes(), expectedMessages[i])
+	}
+}
+
 func TestPostRule_ShouldAddToDatabase(t *testing.T) {
+	when := "when ${1.S1.current} < 20"
 	validator := func(database db.DevicesDatabase) {
 		results, err := database.ListRules()
 		if err != nil {
@@ -42,20 +78,20 @@ func TestPostRule_ShouldAddToDatabase(t *testing.T) {
 			return
 		}
 
-		assert.Equal(t, len(results), 2)
+		assert.Equal(t, len(results), 2, "Is not added to database")
 		assert.Equal(t, results[1].Id, int64(2))
 		assert.Equal(t, results[1].Name, "Test")
-		assert.Equal(t, results[1].When, rules.WhenExpression("When"))
+		assert.Equal(t, results[1].When, rules.WhenExpression(when))
 		assert.Equal(t, results[1].Then, rules.ThenExpression("Then"))
 	}
 
-	body := `
+	body := fmt.Sprintf(`
 	{
 		"name": "Test",
-		"when": "When",
+		"when": "%s",
 		"then": "Then"
 	}
-	`
+	`, when)
 
 	w := RecordPostCallWithDb(t, "/api/v1/rules", body, validator)
 
@@ -70,6 +106,6 @@ func TestPostRule_ShouldAddToDatabase(t *testing.T) {
 
 	assert.Equal(t, rule.Id, int64(2))
 	assert.Equal(t, rule.Name, "Test")
-	assert.Equal(t, rule.When, rules.WhenExpression("When"))
+	assert.Equal(t, rule.When, rules.WhenExpression(when))
 	assert.Equal(t, rule.Then, rules.ThenExpression("Then"))
 }

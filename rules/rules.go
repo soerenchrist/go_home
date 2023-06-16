@@ -37,7 +37,7 @@ func (rule *Rule) ReadAst() (*Node, error) {
 	tokens := strings.Split(string(rule.When), " ")
 
 	if len(tokens) == 0 || tokens[0] == "" {
-		return nil, fmt.Errorf("invalid rule: %s - When Expression is empty", rule.When)
+		return nil, fmt.Errorf("invalid rule: When Expression is empty")
 	}
 
 	if strings.ToUpper(tokens[0]) != "WHEN" {

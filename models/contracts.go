@@ -25,3 +25,9 @@ type CreateCommandRequest struct {
 	Endpoint        string `json:"endpoint"`
 	Method          string `json:"method"`
 }
+
+type CreateRuleRequest struct {
+	Name string `json:"name"`
+	When string `json:"when"`
+	Then string `json:"then"`
+}
