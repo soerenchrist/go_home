@@ -16,7 +16,7 @@ func PollSensorValues(database db.DevicesDatabase) {
 	}
 
 	lastPolls := createPollingMap(sensors)
-	channel := make(chan models.Sensor)
+	channel := make(chan models.Sensor, 10)
 
 	go readChannel(database, channel)
 
