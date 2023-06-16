@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/rules"
 )
 
 type DevicesDatabase interface {
@@ -27,6 +28,9 @@ type DevicesDatabase interface {
 	GetCommand(deviceId, commandId string) (*models.Command, error)
 	ListCommands(deviceId string) ([]models.Command, error)
 	DeleteCommand(deviceId, commandId string) error
+
+	ListRules() ([]rules.Rule, error)
+	AddRule(rule *rules.Rule) error
 
 	Close() error
 	SeedDatabase()
@@ -61,6 +65,9 @@ func (db *SqliteDevicesDatabase) createTables() error {
 		return err
 	}
 	if err := db.createCommandsTable(); err != nil {
+		return err
+	}
+	if err := db.createRulesTable(); err != nil {
 		return err
 	}
 	return nil
@@ -101,6 +108,16 @@ func (database *SqliteDevicesDatabase) SeedDatabase() {
 		panic(err)
 	}
 	if err := database.AddCommand(command1); err != nil {
+		panic(err)
+	}
+
+	rule := &rules.Rule{
+		Name: "Turn on light when temperature is below 20",
+		When: rules.WhenExpression("when ${1.S1.current} < 20"),
+		Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+	}
+
+	if err := database.AddRule(rule); err != nil {
 		panic(err)
 	}
 }

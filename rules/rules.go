@@ -9,7 +9,7 @@ type WhenExpression string
 type ThenExpression string
 
 type Rule struct {
-	Id   string
+	Id   int64
 	Name string
 	When WhenExpression
 	Then ThenExpression

@@ -23,6 +23,7 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	sensorsController := controllers.NewSensorsController(database)
 	sensorDataController := controllers.NewSensorValuesController(database)
 	commandsController := controllers.NewCommandsController(database)
+	rulesController := controllers.NewRulesController(database)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
@@ -48,6 +49,9 @@ func NewRouter(database db.DevicesDatabase) *gin.Engine {
 	v1.POST("/devices/:deviceId/commands", commandsController.PostCommand)
 	v1.POST("/devices/:deviceId/commands/:commandId/invoke", commandsController.InvokeCommand)
 	v1.DELETE("/devices/:deviceId/commands/:commandId", commandsController.DeleteCommand)
+
+	v1.GET("/rules", rulesController.ListRules)
+	v1.POST("/rules", rulesController.PostRule)
 
 	router.POST("/echo", echo)
 	return router

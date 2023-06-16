@@ -1,12 +1,10 @@
 package rules
 
 import (
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 )
 
 type RulesEngine struct {
-	database db.DevicesDatabase
 	sensors  map[string]*models.Sensor
 }
 
@@ -21,40 +19,6 @@ type UsedSensorValue struct {
 	DeviceId string
 	SensorId string
 	Type     SensorValueType
-}
-
-func InitRulesEngine(database db.DevicesDatabase) (*RulesEngine, error) {
-	sensors, err := readSensors(database)
-	if err != nil {
-		return nil, err
-	}
-	return &RulesEngine{database: database, sensors: sensors}, nil
-}
-
-/*
-*
-Preload and cache all devices and sensors from the database
-*/
-func readSensors(database db.DevicesDatabase) (map[string]*models.Sensor, error) {
-	devices, err := database.ListDevices()
-	if err != nil {
-		return nil, err
-	}
-
-	sensorsMap := make(map[string]*models.Sensor)
-	for _, device := range devices {
-
-		sensors, err := database.ListSensors(device.ID)
-		if err != nil {
-			return sensorsMap, err
-		}
-		for _, sensor := range sensors {
-			id := sensor.DeviceID + "." + sensor.ID
-			sensorsMap[id] = &sensor
-		}
-	}
-
-	return sensorsMap, nil
 }
 
 func (e *RulesEngine) DetermineUsedSensors(rule *Rule) ([]UsedSensorValue, error) {
@@ -94,9 +58,3 @@ func contains(values []UsedSensorValue, value UsedSensorValue) bool {
 	}
 	return false
 }
-
-/*
-func (e *RulesEngine) CompileRule(rule *Rule, prevValues []models.SensorValue, currentValues []models.SensorValue) error {
-
-}
-*/

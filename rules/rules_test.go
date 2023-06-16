@@ -38,7 +38,7 @@ func TestInvalidWhenExpressions(t *testing.T) {
 
 	for i, expression := range expressions {
 		rule := &rules.Rule{
-			Id:   "1",
+			Id:   1,
 			Name: "Test Rule",
 			When: rules.WhenExpression(expression),
 			Then: rules.ThenExpression(""),
@@ -122,7 +122,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 
 	for i, expression := range expressions {
 		rule := &rules.Rule{
-			Id:   "1",
+			Id:   1,
 			Name: "Test Rule",
 			When: rules.WhenExpression(expression),
 			Then: rules.ThenExpression(""),
