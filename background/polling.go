@@ -9,7 +9,7 @@ import (
 	"github.com/soerenchrist/go_home/models"
 )
 
-func PollSensorValues(database db.Database) {
+func PollSensorValues(database db.Database, outputBinding chan models.SensorValue) {
 	sensors, err := database.ListPollingSensors()
 	if err != nil {
 		panic(err)
@@ -18,7 +18,7 @@ func PollSensorValues(database db.Database) {
 	lastPolls := createPollingMap(sensors)
 	channel := make(chan models.Sensor, 10)
 
-	go readChannel(database, channel)
+	go readChannel(database, channel, outputBinding)
 
 	log.Printf("Found %d sensors to poll\n", len(sensors))
 
@@ -36,7 +36,7 @@ func PollSensorValues(database db.Database) {
 	}
 }
 
-func readChannel(database db.Database, channel chan models.Sensor) {
+func readChannel(database db.Database, channel chan models.Sensor, outputBinding chan models.SensorValue) {
 	for {
 		sensor := <-channel
 
@@ -55,6 +55,7 @@ func readChannel(database db.Database, channel chan models.Sensor) {
 			log.Printf("Failed to save polling result %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
+		outputBinding <- *result
 		log.Printf("Polled sensor %s successfully with result %s\n", sensor.ID, result.Value)
 	}
 }

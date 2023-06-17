@@ -32,7 +32,7 @@ func Init() {
 	rulesEngine := evaluation.NewRulesEngine(database)
 
 	go rulesEngine.ListenForValues(outputBindings)
-	go background.PollSensorValues(database)
+	go background.PollSensorValues(database, outputBindings)
 
 	r := NewRouter(database, outputBindings)
 
