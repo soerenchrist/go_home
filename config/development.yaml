@@ -4,3 +4,7 @@ server:
 database:
   path: "database.db"
   seed: true
+mqtt:
+  enabled: true
+  port: 8883
+  clientId: "gohome-1"

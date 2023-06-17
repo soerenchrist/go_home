@@ -3,13 +3,16 @@ package server
 import (
 	"database/sql"
 	"fmt"
+	"log"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/go_home/background"
 	"github.com/soerenchrist/go_home/config"
 	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
+	"github.com/soerenchrist/go_home/mqtt"
 	"github.com/soerenchrist/go_home/rules/evaluation"
+	"github.com/spf13/viper"
 )
 
 func Init() {
@@ -27,12 +30,10 @@ func Init() {
 	if seed {
 		database.SeedDatabase()
 	}
-
 	outputBindings := make(chan models.SensorValue, 10)
-	rulesEngine := evaluation.NewRulesEngine(database)
+	addRulesEngine(database, outputBindings)
 
-	go rulesEngine.ListenForValues(outputBindings)
-	go background.PollSensorValues(database, outputBindings)
+	addMqttBinding(config, database)
 
 	r := NewRouter(database, outputBindings)
 
@@ -41,6 +42,41 @@ func Init() {
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 	r.Run(addr)
+}
+
+func addRulesEngine(database db.Database, outputBindings chan models.SensorValue) {
+	rulesEngine := evaluation.NewRulesEngine(database)
+
+	go rulesEngine.ListenForValues(outputBindings)
+	go background.PollSensorValues(database, outputBindings)
+}
+
+func addMqttBinding(config *viper.Viper, database db.Database) {
+	enabled := config.GetBool("mqtt.enabled")
+	if !enabled {
+		return
+	}
+
+	host := config.GetString("mqtt.host")
+	port := config.GetInt("mqtt.port")
+	username := config.GetString("mqtt.username")
+	password := config.GetString("mqtt.password")
+	clientId := config.GetString("mqtt.clientId")
+
+	options := mqtt.MqttConfig{
+		Host:     host,
+		Port:     port,
+		Username: username,
+		Password: password,
+		ClientId: clientId,
+	}
+
+	publishChannel := make(chan mqtt.Message, 10)
+
+	err := mqtt.AddMqttBinding(options, publishChannel, database)
+	if err != nil {
+		log.Println("Failed to add MQTT binding: ", err)
+	}
 }
 
 func openDatabase(path string) *sql.DB {

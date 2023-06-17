@@ -21,6 +21,12 @@ func Init(env string) {
 	if err != nil {
 		log.Fatal("Error reading config file: ", err)
 	}
+
+	config.SetConfigName("secrets")
+	err = config.MergeInConfig()
+	if err != nil {
+		log.Fatal("Error reading secrets file: ", err)
+	}
 }
 
 func GetConfig() *viper.Viper {
