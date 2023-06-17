@@ -39,7 +39,7 @@ type Message struct {
 
 type PublishChannel chan Message
 
-func AddMqttBinding(config MqttConfig, publish PublishChannel, database db.Database) error {
+func AddMqttBinding(config MqttConfig, publish PublishChannel, database db.Database, outputBindings chan models.SensorValue) error {
 	options := mqtt.NewClientOptions()
 	options.AddBroker(fmt.Sprintf("ssl://%s:%d", config.Host, config.Port))
 	options.SetClientID(config.ClientId)
@@ -57,7 +57,7 @@ func AddMqttBinding(config MqttConfig, publish PublishChannel, database db.Datab
 	log.Println("Connected to MQTT broker... Listening for publishes")
 
 	go listenForPublishes(client, publish)
-	subscribeToNewValues(client, database)
+	subscribeToNewValues(client, database, outputBindings)
 
 	return nil
 }
@@ -71,7 +71,7 @@ func listenForPublishes(client mqtt.Client, publish PublishChannel) {
 	}
 }
 
-func subscribeToNewValues(client mqtt.Client, database db.Database) {
+func subscribeToNewValues(client mqtt.Client, database db.Database, outputBindings chan models.SensorValue) {
 	client.Subscribe("home/+/+/value", 0, func(client mqtt.Client, msg mqtt.Message) {
 		topic := msg.Topic()
 		parts := strings.Split(topic, "/")
@@ -119,5 +119,6 @@ func subscribeToNewValues(client mqtt.Client, database db.Database) {
 		default:
 			database.AddSensorValue(sensorValue)
 		}
+		outputBindings <- *sensorValue
 	})
 }

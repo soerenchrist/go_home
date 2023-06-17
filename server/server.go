@@ -31,9 +31,9 @@ func Init() {
 		database.SeedDatabase()
 	}
 	outputBindings := make(chan models.SensorValue, 10)
+	// TODO: Refactor outputbindings channel passing around
 	addRulesEngine(database, outputBindings)
-
-	addMqttBinding(config, database)
+	addMqttBinding(config, database, outputBindings)
 
 	r := NewRouter(database, outputBindings)
 
@@ -51,7 +51,7 @@ func addRulesEngine(database db.Database, outputBindings chan models.SensorValue
 	go background.PollSensorValues(database, outputBindings)
 }
 
-func addMqttBinding(config *viper.Viper, database db.Database) {
+func addMqttBinding(config *viper.Viper, database db.Database, outputBindings chan models.SensorValue) {
 	enabled := config.GetBool("mqtt.enabled")
 	if !enabled {
 		return
@@ -73,7 +73,7 @@ func addMqttBinding(config *viper.Viper, database db.Database) {
 
 	publishChannel := make(chan mqtt.Message, 10)
 
-	err := mqtt.AddMqttBinding(options, publishChannel, database)
+	err := mqtt.AddMqttBinding(options, publishChannel, database, outputBindings)
 	if err != nil {
 		log.Println("Failed to add MQTT binding: ", err)
 	}
