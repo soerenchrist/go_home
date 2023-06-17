@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/soerenchrist/go_home/models"
@@ -55,7 +56,7 @@ func (db *SqliteDevicesDatabase) GetPreviousSensorValue(deviceId, sensorId strin
 	defer rows.Close()
 
 	results := make([]models.SensorValue, 0)
-	if !rows.Next() {
+	for rows.Next() {
 		var sid string
 		var did string
 		var timestamp string
@@ -71,6 +72,7 @@ func (db *SqliteDevicesDatabase) GetPreviousSensorValue(deviceId, sensorId strin
 			Value:     value,
 		})
 	}
+	log.Println("Previous value: ", results)
 
 	if len(results) < 2 {
 		return nil, fmt.Errorf("no previous value found for sensor %v on device %v", sensorId, deviceId)

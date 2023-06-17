@@ -25,8 +25,8 @@ func TestListRules_ShouldReturnRules(t *testing.T) {
 	assert.Equal(t, len(results), 1)
 	assert.Equal(t, results[0].Id, int64(1))
 	assert.Equal(t, results[0].Name, "Turn on light when temperature is below 20")
-	assert.Equal(t, results[0].When, rules.WhenExpression("when ${1.S1.current} < 20"))
-	assert.Equal(t, results[0].Then, rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"))
+	assert.Equal(t, results[0].When, rules.WhenExpression("when ${1.S1.current} < 20 AND ${1.S1.previous} >= 20"))
+	assert.Equal(t, results[0].Then, rules.ThenExpression("then ${1.C1} {\"p_payload\": \"on\"}"))
 }
 
 func TestPostRule_ShouldReturn400_WhenJsonIsInvalid(t *testing.T) {

@@ -156,6 +156,14 @@ func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*model
 	return nil, fmt.Errorf("Sensor value not found for %s", key)
 }
 
+func (db FakeDatabase) GetCommand(deviceId, commandId string) (*models.Command, error) {
+	return nil, fmt.Errorf("Not implemented")
+}
+
+func (db FakeDatabase) GetDevice(deviceId string) (*models.Device, error) {
+	return nil, fmt.Errorf("Not implemented")
+}
+
 func TestRuleEvaluation(t *testing.T) {
 	database := FakeDatabase{}
 	rulesEngine := evaluation.NewRulesEngine(database)

@@ -1,6 +1,7 @@
 package evaluation
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -21,6 +22,8 @@ type RulesDatabase interface {
 	GetSensor(deviceId, sensorId string) (*models.Sensor, error)
 	GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
 	GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
+	GetCommand(deviceId, commandId string) (*models.Command, error)
+	GetDevice(deviceId string) (*models.Device, error)
 }
 
 type UsedSensorValue struct {
@@ -51,15 +54,56 @@ func (engine *RulesEngine) ListenForValues(sensorsChannel chan models.SensorValu
 		if rules, ok := engine.lookupTable[key]; ok {
 			for _, rule := range rules {
 				log.Printf("Evaluating rule %v\n", rule)
-				value, err := engine.EvaluateRule(&rule)
+				evalResult, err := engine.EvaluateRule(&rule)
 				if err != nil {
 					log.Printf("Error evaluating rule: %v\n", err)
 					continue
 				}
-				log.Printf("Rule evaluated to %v\n", value)
+				log.Printf("Rule '%s' evaluated to %v\n", rule.Name, evalResult)
+				if evalResult {
+					err := engine.executeRule(rule)
+					if err != nil {
+						log.Printf("Error executing rule: %v\n", err)
+					}
+				}
 			}
 		}
 	}
+}
+
+func (engine *RulesEngine) executeRule(rule rules.Rule) error {
+	action, err := rule.ReadAction()
+	if err != nil {
+		return fmt.Errorf("error reading action: %v", err)
+	}
+
+	device, err := engine.database.GetDevice(action.DeviceId)
+	if err != nil {
+		return fmt.Errorf("error reading device: %v", err)
+	}
+
+	command, err := engine.database.GetCommand(action.DeviceId, action.CommandId)
+	if err != nil {
+		return fmt.Errorf("error reading command: %v", err)
+	}
+
+	log.Printf("Executing command: %v\n", command)
+
+	var params models.CommandParameters
+	if action.Payload != "" {
+		err := json.Unmarshal([]byte(action.Payload), &params)
+		if err != nil {
+			return err
+		}
+	}
+
+	resp, err := command.Invoke(device, &params)
+	if err != nil {
+		return fmt.Errorf("error invoking command: %v", err)
+	}
+
+	log.Printf("Command response status: %d \n", resp.StatusCode)
+	return nil
 }
 
 func (engine *RulesEngine) EvaluateRule(rule *rules.Rule) (bool, error) {

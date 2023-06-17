@@ -114,8 +114,8 @@ func (database *SqliteDevicesDatabase) SeedDatabase() {
 
 	rule := &rules.Rule{
 		Name: "Turn on light when temperature is below 20",
-		When: rules.WhenExpression("when ${1.S1.current} < 20"),
-		Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+		When: rules.WhenExpression("when ${1.S1.current} < 20 AND ${1.S1.previous} >= 20"),
+		Then: rules.ThenExpression("then ${1.C1} {\"p_payload\": \"on\"}"),
 	}
 
 	if err := database.AddRule(rule); err != nil {
