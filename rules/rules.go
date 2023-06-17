@@ -14,13 +14,14 @@ type Rule struct {
 	When WhenExpression
 	Then ThenExpression
 
-	ast *Node
+	conditionAst     *Node
+	actionExpression *ActionExpression
 }
 
 type Operator string
 type BooleanOperator string
 
-type Expression struct {
+type ConditionExpression struct {
 	SensorId string
 	DeviceId string
 	Variable string
@@ -28,16 +29,44 @@ type Expression struct {
 	Value    string
 }
 
+type ActionExpression struct {
+	DeviceId  string
+	CommandId string
+	Payload   string
+}
+
 type Node struct {
 	Left            *Node
 	Right           *Node
 	BooleanOperator BooleanOperator
-	Expression      *Expression
+	Expression      *ConditionExpression
 }
 
-func (rule *Rule) ReadAst() (*Node, error) {
-	if rule.ast != nil {
-		return rule.ast, nil
+func (rule *Rule) ReadAction() (*ActionExpression, error) {
+	if rule.actionExpression != nil {
+		return rule.actionExpression, nil
+	}
+	tokens := strings.Split(string(rule.Then), " ")
+
+	if len(tokens) == 0 || tokens[0] == "" {
+		return nil, fmt.Errorf("invalid rule: Then Expression is empty")
+	}
+
+	if strings.ToUpper(tokens[0]) != "THEN" {
+		return nil, fmt.Errorf("invalid rule: %s - Expected THEN keyword", rule.Then)
+	}
+
+	action, err := rule.parseThenExpression(tokens[1:])
+	if err != nil {
+		return nil, err
+	}
+	rule.actionExpression = action
+	return action, nil
+}
+
+func (rule *Rule) ReadConditionAst() (*Node, error) {
+	if rule.conditionAst != nil {
+		return rule.conditionAst, nil
 	}
 	tokens := strings.Split(string(rule.When), " ")
 
@@ -49,15 +78,15 @@ func (rule *Rule) ReadAst() (*Node, error) {
 		return nil, fmt.Errorf("invalid rule: %s - Expected WHEN keyword", rule.When)
 	}
 
-	expression, err := rule.evaluateExpression(tokens[1:])
+	expression, err := rule.parseWhenExpression(tokens[1:])
 	if err != nil {
 		return nil, err
 	}
-	rule.ast = expression
+	rule.conditionAst = expression
 	return expression, nil
 }
 
-func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
+func (rule *Rule) parseWhenExpression(tokens []string) (*Node, error) {
 	if len(tokens) == 0 {
 		return nil, fmt.Errorf("invalid rule: %s - When Expression is empty", rule.When)
 	}
@@ -68,7 +97,7 @@ func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
 		return nil, fmt.Errorf("invalid rule: %s - Expected variable", rule.When)
 	}
 
-	deviceId, sensorId, variable, err := rule.readVariable(token)
+	deviceId, sensorId, variable, err := rule.readSensorVariable(token)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +114,7 @@ func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
 	}
 
 	value := tokens[currentIndex]
-	sensor := &Expression{
+	sensor := &ConditionExpression{
 		SensorId: sensorId,
 		DeviceId: deviceId,
 		Variable: variable,
@@ -108,7 +137,7 @@ func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
 	}
 
 	boolOp := BooleanOperator(tokens[currentIndex])
-	rightSide, err := rule.evaluateExpression(tokens[currentIndex+1:])
+	rightSide, err := rule.parseWhenExpression(tokens[currentIndex+1:])
 	if err != nil {
 		return nil, err
 	}
@@ -121,11 +150,42 @@ func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {
 	}, nil
 }
 
+func (rule *Rule) parseThenExpression(tokens []string) (*ActionExpression, error) {
+	if len(tokens) == 0 {
+		return nil, fmt.Errorf("invalid rule: %s - Then Expression is empty", rule.Then)
+	}
+	currentIndex := 0
+
+	token := tokens[currentIndex]
+	if !rule.isVariable(token) {
+		return nil, fmt.Errorf("invalid rule: %s - Expected command variable", rule.Then)
+	}
+
+	action := &ActionExpression{}
+	deviceId, commandId, err := rule.readCommandVariable(token)
+	if err != nil {
+		return nil, err
+	}
+
+	action.CommandId = commandId
+	action.DeviceId = deviceId
+
+	currentIndex++
+	if len(tokens) == currentIndex {
+		return action, nil
+	}
+
+	payload := strings.Join(tokens[currentIndex:], " ")
+	action.Payload = payload
+
+	return action, nil
+}
+
 func (rule *Rule) isVariable(token string) bool {
 	return strings.HasPrefix(token, "${") && strings.HasSuffix(token, "}")
 }
 
-func (rule *Rule) readVariable(token string) (deviceId string, sensorId string, variable string, err error) {
+func (rule *Rule) readSensorVariable(token string) (deviceId string, sensorId string, variable string, err error) {
 	parts := strings.Split(token[2:len(token)-1], ".")
 
 	if len(parts) != 3 {
@@ -133,6 +193,16 @@ func (rule *Rule) readVariable(token string) (deviceId string, sensorId string, 
 	}
 
 	return parts[0], parts[1], parts[2], nil
+}
+
+func (rule *Rule) readCommandVariable(token string) (deviceId string, commandId string, err error) {
+	parts := strings.Split(token[2:len(token)-1], ".")
+
+	if len(parts) != 2 {
+		return "", "", fmt.Errorf("invalid variable: %s - Should consist of deviceId.commandId", token)
+	}
+
+	return parts[0], parts[1], nil
 }
 
 var operators = []Operator{

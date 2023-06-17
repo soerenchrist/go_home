@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
@@ -56,8 +58,14 @@ func (controller *RulesController) validateRule(rule *rules.Rule) error {
 		return &models.ValidationError{Message: "Name is required"}
 	}
 
-	_, err := rule.ReadAst()
+	_, err := rule.ReadConditionAst()
 	if err != nil {
+		return &models.ValidationError{Message: err.Error()}
+	}
+
+	_, err = rule.ReadAction()
+	if err != nil {
+		log.Printf("Error: %v", err)
 		return &models.ValidationError{Message: err.Error()}
 	}
 	return nil

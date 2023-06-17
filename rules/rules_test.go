@@ -44,7 +44,7 @@ func TestInvalidWhenExpressions(t *testing.T) {
 			Then: rules.ThenExpression(""),
 		}
 
-		_, err := rule.ReadAst()
+		_, err := rule.ReadConditionAst()
 
 		if err == nil {
 			t.Errorf("Expression %s should give error, but got none", expression)
@@ -68,7 +68,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 
 	expectedResult := []rules.Node{
 		{
-			Expression: &rules.Expression{
+			Expression: &rules.ConditionExpression{
 				SensorId: "S1",
 				DeviceId: "1",
 				Variable: "curr",
@@ -78,7 +78,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 		},
 		{
 			Left: &rules.Node{
-				Expression: &rules.Expression{
+				Expression: &rules.ConditionExpression{
 					SensorId: "S1",
 					DeviceId: "1",
 					Variable: "curr",
@@ -88,7 +88,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 			},
 			BooleanOperator: "AND",
 			Right: &rules.Node{
-				Expression: &rules.Expression{
+				Expression: &rules.ConditionExpression{
 					SensorId: "S1",
 					DeviceId: "1",
 					Variable: "prev",
@@ -99,7 +99,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 		},
 		{
 			Left: &rules.Node{
-				Expression: &rules.Expression{
+				Expression: &rules.ConditionExpression{
 					SensorId: "S2",
 					DeviceId: "1",
 					Variable: "curr",
@@ -109,7 +109,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 			},
 			BooleanOperator: "OR",
 			Right: &rules.Node{
-				Expression: &rules.Expression{
+				Expression: &rules.ConditionExpression{
 					SensorId: "S2",
 					DeviceId: "1",
 					Variable: "prev",
@@ -128,7 +128,7 @@ func TestReadDependentSensors_ShouldReturnCorrectValues(t *testing.T) {
 			Then: rules.ThenExpression(""),
 		}
 
-		result, err := rule.ReadAst()
+		result, err := rule.ReadConditionAst()
 
 		if err != nil {
 			t.Errorf("Expression %s, got error, expected none", expression)
@@ -167,7 +167,7 @@ func assertResult(t *testing.T, expected, got *rules.Node) {
 	}
 }
 
-func assertSensor(t *testing.T, expected, got *rules.Expression) {
+func assertSensor(t *testing.T, expected, got *rules.ConditionExpression) {
 	if expected == nil && got == nil {
 		return
 	}
@@ -193,5 +193,101 @@ func assertSensor(t *testing.T, expected, got *rules.Expression) {
 
 	if expected.Value != got.Value {
 		t.Errorf("Expected value '%s', but got '%s'", expected.Value, got.Value)
+	}
+}
+
+func TestInvalidActionRules(t *testing.T) {
+	invalidExpressions := []string{
+		"",
+		"when",
+		"then",
+		"then something",
+		"then ${something}",
+	}
+
+	expectedMessages := []string{
+		"Then Expression is empty",
+		"Expected THEN keyword",
+		"Then Expression is empty",
+		"Expected command variable",
+		"Should consist of deviceId.commandId",
+	}
+
+	for i, exp := range invalidExpressions {
+		rule := &rules.Rule{
+			Id:   1,
+			Name: "Test Rule",
+			When: rules.WhenExpression(""),
+			Then: rules.ThenExpression(exp),
+		}
+
+		_, err := rule.ReadAction()
+
+		if err == nil {
+			t.Errorf("Expression %s should give error, but got none", exp)
+			return
+		}
+
+		expectedMessage := expectedMessages[i]
+
+		if !strings.HasSuffix(err.Error(), expectedMessage) {
+			t.Errorf("Expected '%s', but got '%s'", expectedMessage, err.Error())
+		}
+	}
+}
+
+func TestValidActionRules(t *testing.T) {
+	validExpressions := []string{
+		"then ${device1.command1}",
+		"then ${device2.command2} ON",
+		`then ${device2.command2} {"key": "value"}`,
+	}
+
+	expectedActions := []rules.ActionExpression{
+		{
+			DeviceId:  "device1",
+			CommandId: "command1",
+			Payload:   "",
+		},
+		{
+			DeviceId:  "device2",
+			CommandId: "command2",
+			Payload:   "ON",
+		},
+		{
+			DeviceId:  "device2",
+			CommandId: "command2",
+			Payload:   `{"key": "value"}`,
+		},
+	}
+
+	for i, exp := range validExpressions {
+		rule := &rules.Rule{
+			Id:   1,
+			Name: "Test Rule",
+			When: rules.WhenExpression(""),
+			Then: rules.ThenExpression(exp),
+		}
+
+		result, err := rule.ReadAction()
+
+		if err != nil {
+			t.Errorf("Expression %s should not give error, but got %s", exp, err.Error())
+			return
+		}
+
+		expectedAction := expectedActions[i]
+
+		if result.DeviceId != expectedAction.DeviceId {
+			t.Errorf("Expected deviceId '%s', but got '%s'", expectedAction.DeviceId, result.DeviceId)
+		}
+
+		if result.CommandId != expectedAction.CommandId {
+			t.Errorf("Expected commandId '%s', but got '%s'", expectedAction.CommandId, result.CommandId)
+		}
+
+		if result.Payload != expectedAction.Payload {
+			t.Errorf("Expected payload '%s', but got '%s'", expectedAction.Payload, result.Payload)
+		}
 	}
 }

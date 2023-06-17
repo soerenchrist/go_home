@@ -40,18 +40,24 @@ func TestPostRule_ShouldReturn400WhenRuleIsInvalid(t *testing.T) {
 		{
 			Name: "",
 			When: rules.WhenExpression("when ${1.S1.current} < 20"),
-			Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+			Then: rules.ThenExpression("then ${1.C1}"),
 		},
 		{
 			Name: "Test",
 			When: rules.WhenExpression(""),
-			Then: rules.ThenExpression("then ${1.C1} params {\"p_payload\": \"on\"}"),
+			Then: rules.ThenExpression("then ${1.C1}"),
+		},
+		{
+			Name: "Test",
+			When: rules.WhenExpression("when ${1.S1.current} < 20"),
+			Then: rules.ThenExpression(""),
 		},
 	}
 
 	expectedMessages := []string{
 		"Name is required",
 		"invalid rule: When Expression is empty",
+		"invalid rule: Then Expression is empty",
 	}
 
 	for i, rule := range invalidRules {
@@ -82,14 +88,14 @@ func TestPostRule_ShouldAddToDatabase(t *testing.T) {
 		assert.Equal(t, results[1].Id, int64(2))
 		assert.Equal(t, results[1].Name, "Test")
 		assert.Equal(t, results[1].When, rules.WhenExpression(when))
-		assert.Equal(t, results[1].Then, rules.ThenExpression("Then"))
+		assert.Equal(t, results[1].Then, rules.ThenExpression("Then ${1.C1}"))
 	}
 
 	body := fmt.Sprintf(`
 	{
 		"name": "Test",
 		"when": "%s",
-		"then": "Then"
+		"then": "Then ${1.C1}"
 	}
 	`, when)
 
@@ -107,5 +113,5 @@ func TestPostRule_ShouldAddToDatabase(t *testing.T) {
 	assert.Equal(t, rule.Id, int64(2))
 	assert.Equal(t, rule.Name, "Test")
 	assert.Equal(t, rule.When, rules.WhenExpression(when))
-	assert.Equal(t, rule.Then, rules.ThenExpression("Then"))
+	assert.Equal(t, rule.Then, rules.ThenExpression("Then ${1.C1}"))
 }

@@ -77,7 +77,7 @@ func (engine *RulesEngine) EvaluateRule(rule *rules.Rule) (bool, error) {
 		log.Printf("Sensor value: %s = %v\n", key, value)
 	}
 
-	ast, err := rule.ReadAst()
+	ast, err := rule.ReadConditionAst()
 	if err != nil {
 		return false, err
 	}
@@ -116,7 +116,7 @@ func (engine *RulesEngine) evaluateAst(ast *rules.Node, values map[string]string
 	}
 }
 
-func (engine *RulesEngine) evaluateExpression(expression *rules.Expression, values map[string]string) (bool, error) {
+func (engine *RulesEngine) evaluateExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
 	sensor, err := engine.database.GetSensor(expression.DeviceId, expression.SensorId)
 	if err != nil {
 		return false, err
@@ -136,7 +136,7 @@ func (engine *RulesEngine) evaluateExpression(expression *rules.Expression, valu
 	}
 }
 
-func (engine *RulesEngine) evaluateStringExpression(expression *rules.Expression, values map[string]string) (bool, error) {
+func (engine *RulesEngine) evaluateStringExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
 	key := fmt.Sprintf("%s.%s.%s", expression.DeviceId, expression.SensorId, expression.Variable)
 	value, ok := values[key]
 	if !ok {
@@ -153,7 +153,7 @@ func (engine *RulesEngine) evaluateStringExpression(expression *rules.Expression
 	}
 }
 
-func (engine *RulesEngine) evaluateBoolExpression(expression *rules.Expression, values map[string]string) (bool, error) {
+func (engine *RulesEngine) evaluateBoolExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
 	key := fmt.Sprintf("%s.%s.%s", expression.DeviceId, expression.SensorId, expression.Variable)
 	value, ok := values[key]
 	if !ok {
@@ -180,7 +180,7 @@ func (engine *RulesEngine) evaluateBoolExpression(expression *rules.Expression, 
 	}
 }
 
-func (engine *RulesEngine) evaluateFloatExpression(expression *rules.Expression, values map[string]string) (bool, error) {
+func (engine *RulesEngine) evaluateFloatExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
 	key := fmt.Sprintf("%s.%s.%s", expression.DeviceId, expression.SensorId, expression.Variable)
 	value, ok := values[key]
 	if !ok {
@@ -215,7 +215,7 @@ func (engine *RulesEngine) evaluateFloatExpression(expression *rules.Expression,
 	}
 }
 
-func (engine *RulesEngine) evaluateIntExpression(expression *rules.Expression, values map[string]string) (bool, error) {
+func (engine *RulesEngine) evaluateIntExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
 	key := fmt.Sprintf("%s.%s.%s", expression.DeviceId, expression.SensorId, expression.Variable)
 	value, ok := values[key]
 	if !ok {
@@ -302,7 +302,7 @@ func buildLookupTable(database RulesDatabase) (map[string][]rules.Rule, error) {
 }
 
 func DetermineUsedSensors(rule *rules.Rule) ([]UsedSensorValue, error) {
-	ast, err := rule.ReadAst()
+	ast, err := rule.ReadConditionAst()
 	if err != nil {
 		return nil, err
 	}
