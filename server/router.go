@@ -11,7 +11,7 @@ import (
 	"github.com/soerenchrist/go_home/models"
 )
 
-func NewRouter(database db.DevicesDatabase, outputBindings chan models.SensorValue) *gin.Engine {
+func NewRouter(database db.Database, outputBindings chan models.SensorValue) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())

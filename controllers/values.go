@@ -7,17 +7,24 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/util"
 )
 
+type SensorValuesDatabase interface {
+	GetSensorValuesSince(deviceId string, sensorId string, since time.Time) ([]models.SensorValue, error)
+	GetSensor(deviceId string, sensorId string) (*models.Sensor, error)
+	GetDevice(deviceId string) (*models.Device, error)
+	GetCurrentSensorValue(deviceId string, sensorId string) (*models.SensorValue, error)
+	AddSensorValue(sensorValue *models.SensorValue) error
+}
+
 type SensorValuesController struct {
-	database       db.DevicesDatabase
+	database       SensorValuesDatabase
 	outputBindings chan models.SensorValue
 }
 
-func NewSensorValuesController(database db.DevicesDatabase, outputBindings chan models.SensorValue) *SensorValuesController {
+func NewSensorValuesController(database SensorValuesDatabase, outputBindings chan models.SensorValue) *SensorValuesController {
 	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 

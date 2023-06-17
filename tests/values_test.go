@@ -105,7 +105,7 @@ func TestAddSensorValue_ShouldAddSensorValueToDb(t *testing.T) {
 	body := `{
 		"value": "1.23"
 	}`
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		value, err := database.GetCurrentSensorValue("1", "S1")
 		if err != nil {
 			t.Error(err)

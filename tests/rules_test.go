@@ -77,7 +77,7 @@ func TestPostRule_ShouldReturn400WhenRuleIsInvalid(t *testing.T) {
 
 func TestPostRule_ShouldAddToDatabase(t *testing.T) {
 	when := "when ${1.S1.current} < 20"
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		results, err := database.ListRules()
 		if err != nil {
 			t.Errorf("Error while listing rules: %s", err.Error())

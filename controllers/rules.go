@@ -4,16 +4,15 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/rules"
 )
 
 type RulesController struct {
-	database db.DevicesDatabase
+	database rules.RulesDatabase
 }
 
-func NewRulesController(database db.DevicesDatabase) *RulesController {
+func NewRulesController(database rules.RulesDatabase) *RulesController {
 	return &RulesController{database: database}
 }
 

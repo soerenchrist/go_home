@@ -8,10 +8,10 @@ import (
 
 type App struct {
 	router   *gin.Engine
-	database db.DevicesDatabase
+	database db.Database
 }
 
-func NewApp(router *gin.Engine, database db.DevicesDatabase) *App {
+func NewApp(router *gin.Engine, database db.Database) *App {
 	return &App{
 		router:   router,
 		database: database,

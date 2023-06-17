@@ -17,7 +17,7 @@ import (
 	"github.com/soerenchrist/go_home/server"
 )
 
-func CreateTestDatabase(filename string) db.DevicesDatabase {
+func CreateTestDatabase(filename string) db.Database {
 	sqlite, err := sql.Open("sqlite3", filename)
 	if err != nil {
 		panic(err)
@@ -36,12 +36,12 @@ func CreateTestDatabase(filename string) db.DevicesDatabase {
 	return database
 }
 
-func CloseTestDatabase(database db.DevicesDatabase, filename string) {
+func CloseTestDatabase(database db.Database, filename string) {
 	database.Close()
 	os.Remove(filename)
 }
 
-type DbValidator func(database db.DevicesDatabase)
+type DbValidator func(database db.Database)
 
 func recordCall(t *testing.T, url string, method string, body io.Reader, dbValidator DbValidator) *httptest.ResponseRecorder {
 	gin.DefaultWriter = io.Discard

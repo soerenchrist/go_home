@@ -116,7 +116,7 @@ func TestCreateCommand_ShouldAddCommandToDatabase(t *testing.T) {
 		"method": "POST"
 	}`
 
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		commands, err := database.ListCommands("1")
 		if err != nil {
 			t.Fatal(err)
@@ -161,7 +161,7 @@ func TestDeleteCommand_ShouldReturn404_WhenCommandDoesNotExist(t *testing.T) {
 }
 
 func TestDeleteCommand_ShouldDeleteCommand(t *testing.T) {
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		commands, err := database.ListCommands("1")
 		if err != nil {
 			t.Fatal(err)

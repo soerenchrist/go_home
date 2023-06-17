@@ -8,7 +8,7 @@ import (
 	"github.com/soerenchrist/go_home/rules"
 )
 
-type DevicesDatabase interface {
+type Database interface {
 	AddDevice(entity *models.Device) error
 	GetDevice(id string) (*models.Device, error)
 	DeleteDevice(id string) error

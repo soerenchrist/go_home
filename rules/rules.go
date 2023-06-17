@@ -3,10 +3,22 @@ package rules
 import (
 	"fmt"
 	"strings"
+
+	"github.com/soerenchrist/go_home/models"
 )
 
 type WhenExpression string
 type ThenExpression string
+
+type RulesDatabase interface {
+	AddRule(rule *Rule) error
+	ListRules() ([]Rule, error)
+	GetSensor(deviceId, sensorId string) (*models.Sensor, error)
+	GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
+	GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
+	GetCommand(deviceId, commandId string) (*models.Command, error)
+	GetDevice(deviceId string) (*models.Device, error)
+}
 
 type Rule struct {
 	Id   int64

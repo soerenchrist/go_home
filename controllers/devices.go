@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 
 	"github.com/google/uuid"
@@ -9,11 +8,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DevicesController struct {
-	database db.DevicesDatabase
+type DevicesDatabase interface {
+	ListDevices() ([]models.Device, error)
+	GetDevice(deviceId string) (*models.Device, error)
+	AddDevice(device *models.Device) error
+	DeleteDevice(deviceId string) error
 }
 
-func NewDevicesController(database db.DevicesDatabase) *DevicesController {
+type DevicesController struct {
+	database DevicesDatabase
+}
+
+func NewDevicesController(database DevicesDatabase) *DevicesController {
 	return &DevicesController{database: database}
 }
 

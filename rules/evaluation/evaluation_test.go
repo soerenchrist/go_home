@@ -85,6 +85,10 @@ func (db FakeDatabase) ListRules() ([]rules.Rule, error) {
 	}, nil
 }
 
+func (db FakeDatabase) AddRule(rule *rules.Rule) error {
+	return nil
+}
+
 func (db FakeDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, error) {
 	if deviceId == "device1" && sensorId == "sensor1" {
 		return &models.Sensor{

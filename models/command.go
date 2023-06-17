@@ -1,11 +1,13 @@
 package models
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"text/template"
 
-	"github.com/soerenchrist/go_home/templating"
 	"github.com/soerenchrist/go_home/util"
 )
 
@@ -42,7 +44,7 @@ func (command *Command) prepareBody(device *Device, params *CommandParameters) (
 		return nil, nil
 	}
 
-	var data templating.TemplateParameters = make(map[string]string)
+	var data TemplateParameters = make(map[string]string)
 	data["command_id"] = command.ID
 	data["command_name"] = command.Name
 	data["device_id"] = device.ID
@@ -53,10 +55,25 @@ func (command *Command) prepareBody(device *Device, params *CommandParameters) (
 		data[fmt.Sprintf("p_%s", key)] = value
 	}
 
-	return templating.PrepareCommandTemplate(command.PayloadTemplate, &data)
+	return PrepareCommandTemplate(command.PayloadTemplate, &data)
 }
 
 type InvocationResult struct {
 	Response   string `json:"response"`
 	StatusCode int    `json:"statusCode"`
+}
+
+type TemplateParameters map[string]string
+
+func PrepareCommandTemplate(payloadTemplate string, params *TemplateParameters) (io.Reader, error) {
+
+	t := template.Must(template.New("payload").Parse(payloadTemplate))
+	var b bytes.Buffer
+
+	err := t.Execute(&b, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return strings.NewReader(b.String()), nil
 }

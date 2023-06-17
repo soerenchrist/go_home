@@ -9,7 +9,7 @@ import (
 	"github.com/soerenchrist/go_home/models"
 )
 
-func PollSensorValues(database db.DevicesDatabase) {
+func PollSensorValues(database db.Database) {
 	sensors, err := database.ListPollingSensors()
 	if err != nil {
 		panic(err)
@@ -36,7 +36,7 @@ func PollSensorValues(database db.DevicesDatabase) {
 	}
 }
 
-func readChannel(database db.DevicesDatabase, channel chan models.Sensor) {
+func readChannel(database db.Database, channel chan models.Sensor) {
 	for {
 		sensor := <-channel
 

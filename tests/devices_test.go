@@ -67,7 +67,7 @@ func TestCreateDevice_ShouldBeInDatabase_WhenDataIsValid(t *testing.T) {
 	`
 
 	// check, if the device is in the database
-	validateDb := func(database db.DevicesDatabase) {
+	validateDb := func(database db.Database) {
 		devices, err := database.ListDevices()
 		if err != nil {
 			t.Fatal(err)
@@ -110,7 +110,7 @@ func TestDeleteDevice_ShouldReturn404_WhenTheGivenIdDoesNotExist(t *testing.T) {
 }
 
 func TestDeleteDevice_ShouldReturn204AndDelete_WhenTheGivenIdDoesExist(t *testing.T) {
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		devices, err := database.ListDevices()
 		if err != nil {
 			t.Fatal(err)

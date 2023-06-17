@@ -1,10 +1,10 @@
-package templating_test
+package models_test
 
 import (
 	"io"
 	"testing"
 
-	"github.com/soerenchrist/go_home/templating"
+	"github.com/soerenchrist/go_home/models"
 )
 
 var template = `{
@@ -17,13 +17,13 @@ var template = `{
 
 func TestPrepareTemplate(t *testing.T) {
 
-	var params templating.TemplateParameters = make(map[string]string)
+	var params models.TemplateParameters = make(map[string]string)
 	params["device_id"] = "device_id"
 	params["command_id"] = "command_id"
 	params["p_payload"] = "payload"
 	params["now"] = "now"
 
-	reader, err := templating.PrepareCommandTemplate(template, &params)
+	reader, err := models.PrepareCommandTemplate(template, &params)
 	if err != nil {
 		t.Errorf("Error preparing template: %s", err)
 	}
@@ -51,7 +51,7 @@ func TestPrepareTemplate(t *testing.T) {
 
 func TestPrepareTemplateWithIf(t *testing.T) {
 
-	var params templating.TemplateParameters = make(map[string]string)
+	var params models.TemplateParameters = make(map[string]string)
 	params["device_id"] = "device_id"
 	params["command_id"] = "command_id"
 	params["p_payload"] = "payload"
@@ -59,7 +59,7 @@ func TestPrepareTemplateWithIf(t *testing.T) {
 	params["p_device_name"] = "device_name"
 	params["p_show_device_name"] = "true"
 
-	reader, err := templating.PrepareCommandTemplate(template, &params)
+	reader, err := models.PrepareCommandTemplate(template, &params)
 	if err != nil {
 		t.Errorf("Error preparing template: %s", err)
 	}

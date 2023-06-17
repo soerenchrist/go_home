@@ -6,15 +6,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 )
 
-type CommandsController struct {
-	database db.DevicesDatabase
+type CommandsDatabase interface {
+	ListCommands(deviceId string) ([]models.Command, error)
+	GetCommand(deviceId string, commandId string) (*models.Command, error)
+	GetDevice(deviceId string) (*models.Device, error)
+	AddCommand(command *models.Command) error
+	DeleteCommand(deviceId string, commandId string) error
 }
 
-func NewCommandsController(database db.DevicesDatabase) *CommandsController {
+type CommandsController struct {
+	database CommandsDatabase
+}
+
+func NewCommandsController(database CommandsDatabase) *CommandsController {
 	return &CommandsController{database: database}
 }
 

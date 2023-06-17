@@ -121,7 +121,7 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 		"polling_endpoint": "http://"
 	}`
 
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		sensors, err := database.ListSensors("1")
 		if err != nil {
 			t.Fatal(err)
@@ -167,7 +167,7 @@ func TestDeleteSensor_ShouldReturn404_WhenSensorDoesNotExist(t *testing.T) {
 }
 
 func TestDeleteSensor_ShouldDeleteSensorFromDb_WhenSensorDoesExist(t *testing.T) {
-	validator := func(database db.DevicesDatabase) {
+	validator := func(database db.Database) {
 		sensors, err := database.ListSensors("1")
 		if err != nil {
 			t.Fatal(err)

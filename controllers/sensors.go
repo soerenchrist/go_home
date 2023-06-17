@@ -3,15 +3,22 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 )
 
-type SensorsController struct {
-	database db.DevicesDatabase
+type SensorsDatabase interface {
+	ListSensors(deviceId string) ([]models.Sensor, error)
+	GetSensor(deviceId string, sensorId string) (*models.Sensor, error)
+	GetDevice(deviceId string) (*models.Device, error)
+	AddSensor(sensor *models.Sensor) error
+	DeleteSensor(deviceId string, sensorId string) error
 }
 
-func NewSensorsController(database db.DevicesDatabase) *SensorsController {
+type SensorsController struct {
+	database SensorsDatabase
+}
+
+func NewSensorsController(database SensorsDatabase) *SensorsController {
 	return &SensorsController{database: database}
 }
 

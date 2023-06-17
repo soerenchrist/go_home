@@ -17,15 +17,6 @@ const (
 	CurrentSensorValue  SensorValueType = "current"
 )
 
-type RulesDatabase interface {
-	ListRules() ([]rules.Rule, error)
-	GetSensor(deviceId, sensorId string) (*models.Sensor, error)
-	GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
-	GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
-	GetCommand(deviceId, commandId string) (*models.Command, error)
-	GetDevice(deviceId string) (*models.Device, error)
-}
-
 type UsedSensorValue struct {
 	DeviceId string
 	SensorId string
@@ -33,11 +24,11 @@ type UsedSensorValue struct {
 }
 
 type RulesEngine struct {
-	database    RulesDatabase
+	database    rules.RulesDatabase
 	lookupTable map[string][]rules.Rule
 }
 
-func NewRulesEngine(database RulesDatabase) *RulesEngine {
+func NewRulesEngine(database rules.RulesDatabase) *RulesEngine {
 	lookupTable, err := buildLookupTable(database)
 	if err != nil {
 		panic(err)
@@ -319,7 +310,7 @@ func (engine *RulesEngine) readDependentValues(deps []UsedSensorValue) (map[stri
 	return results, nil
 }
 
-func buildLookupTable(database RulesDatabase) (map[string][]rules.Rule, error) {
+func buildLookupTable(database rules.RulesDatabase) (map[string][]rules.Rule, error) {
 	lookupTable := make(map[string][]rules.Rule)
 
 	allRules, err := database.ListRules()
