@@ -13,6 +13,8 @@ type Rule struct {
 	Name string
 	When WhenExpression
 	Then ThenExpression
+
+	ast *Node
 }
 
 type Operator string
@@ -34,6 +36,9 @@ type Node struct {
 }
 
 func (rule *Rule) ReadAst() (*Node, error) {
+	if rule.ast != nil {
+		return rule.ast, nil
+	}
 	tokens := strings.Split(string(rule.When), " ")
 
 	if len(tokens) == 0 || tokens[0] == "" {
@@ -45,7 +50,11 @@ func (rule *Rule) ReadAst() (*Node, error) {
 	}
 
 	expression, err := rule.evaluateExpression(tokens[1:])
-	return expression, err
+	if err != nil {
+		return nil, err
+	}
+	rule.ast = expression
+	return expression, nil
 }
 
 func (rule *Rule) evaluateExpression(tokens []string) (*Node, error) {

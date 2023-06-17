@@ -1,10 +1,13 @@
 package evaluation_test
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/rules"
 	"github.com/soerenchrist/go_home/rules/evaluation"
+	"github.com/soerenchrist/go_home/util"
 )
 
 func TestDetermineUsedSensorValues_ShouldFindCorrectValues(t *testing.T) {
@@ -54,6 +57,129 @@ func TestDetermineUsedSensorValues_ShouldFindCorrectValues(t *testing.T) {
 
 		assertUsedSensors(t, expectedUsedSensorValues, usedSensorValues)
 	}
+}
+
+type FakeDatabase struct {
+}
+
+func (db FakeDatabase) ListRules() ([]rules.Rule, error) {
+	return []rules.Rule{
+		{
+			When: rules.WhenExpression("when ${device1.sensor1.current} > 10 AND ${device2.sensor2.previous} == false"),
+			Then: rules.ThenExpression("then ${device1.switch1} = true"),
+			Name: "Test Rule 1",
+			Id:   1,
+		},
+		{
+			When: rules.WhenExpression("when ${device1.sensor1.previous} > 10 AND ${device2.sensor2.previous} == false"),
+			Then: rules.ThenExpression("then ${device1.switch1} = true"),
+			Name: "Test Rule 2",
+			Id:   2,
+		},
+		{
+			When: rules.WhenExpression("when ${device1.sensor1.previous} > 10 OR ${device2.sensor2.previous} == false"),
+			Then: rules.ThenExpression("then ${device1.switch1} = true"),
+			Name: "Test Rule 3",
+			Id:   2,
+		},
+	}, nil
+}
+
+func (db FakeDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, error) {
+	if deviceId == "device1" && sensorId == "sensor1" {
+		return &models.Sensor{
+			DeviceID: "device1",
+			ID:       "sensor1",
+			Type:     models.SensorTypeExternal,
+			DataType: models.DataTypeInt,
+			Name:     "Sensor 1",
+			IsActive: true,
+		}, nil
+	} else if deviceId == "device2" && sensorId == "sensor2" {
+		return &models.Sensor{
+			DeviceID: "device2",
+			ID:       "sensor2",
+			Type:     models.SensorTypeExternal,
+			DataType: models.DataTypeBool,
+			Name:     "Sensor 2",
+			IsActive: true,
+		}, nil
+	}
+	return nil, fmt.Errorf("Sensor not found for %s.%s", deviceId, sensorId)
+}
+
+func (db FakeDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
+	sensorValues := map[string]*models.SensorValue{
+		"device1.sensor1": {
+			SensorID:  "sensor1",
+			DeviceID:  "device1",
+			Value:     "11",
+			Timestamp: util.GetTimestamp(),
+		},
+		"device2.sensor2": {
+			SensorID:  "sensor2",
+			DeviceID:  "device2",
+			Value:     "true",
+			Timestamp: util.GetTimestamp(),
+		},
+	}
+
+	key := deviceId + "." + sensorId
+	if sensorValue, ok := sensorValues[key]; ok {
+		return sensorValue, nil
+	}
+
+	return nil, fmt.Errorf("Sensor value not found for %s", key)
+}
+
+func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
+	sensorValues := map[string]*models.SensorValue{
+		"device1.sensor1": {
+			SensorID:  "sensor1",
+			DeviceID:  "device1",
+			Value:     "8",
+			Timestamp: util.GetTimestamp(),
+		},
+		"device2.sensor2": {
+			SensorID:  "sensor2",
+			DeviceID:  "device2",
+			Value:     "false",
+			Timestamp: util.GetTimestamp(),
+		},
+	}
+
+	key := deviceId + "." + sensorId
+	if sensorValue, ok := sensorValues[key]; ok {
+		return sensorValue, nil
+	}
+
+	return nil, fmt.Errorf("Sensor value not found for %s", key)
+}
+
+func TestRuleEvaluation(t *testing.T) {
+	database := FakeDatabase{}
+	rulesEngine := evaluation.NewRulesEngine(database)
+
+	rules, err := database.ListRules()
+	if err != nil {
+		t.Errorf("Error while listing rules: %v", err)
+	}
+
+	expectedResults := []bool{true, false, true}
+
+	for i, rule := range rules {
+		result, err := rulesEngine.EvaluateRule(&rule)
+
+		if err != nil {
+			t.Errorf("Error while evaluating rule: %v", err)
+		}
+
+		expectedResult := expectedResults[i]
+		if result != expectedResult {
+			t.Errorf("Expected result %v, but got %v", expectedResult, result)
+		}
+	}
+
 }
 
 func assertUsedSensors(t *testing.T, expected, got []evaluation.UsedSensorValue) {

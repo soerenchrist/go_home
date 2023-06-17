@@ -2,5 +2,5 @@ POST http://localhost:8080/api/v1/devices/1/sensors/S1/values
 Content-Type: application/json
 
 {
-    "value": "20"
+    "value": "19"
 }
