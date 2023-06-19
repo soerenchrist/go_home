@@ -25,7 +25,7 @@ func Init(env string) {
 	config.SetConfigName("secrets")
 	err = config.MergeInConfig()
 	if err != nil {
-		log.Fatal("Error reading secrets file: ", err)
+		log.Println("No secrets file found. Proceeding...")
 	}
 }
 
