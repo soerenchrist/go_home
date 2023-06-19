@@ -1,8 +1,9 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/soerenchrist/go_home/models"
 )
 
@@ -51,6 +52,11 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		return
 	}
 
+	if _, err := c.database.GetSensor(deviceId, request.Id); err == nil {
+		context.JSON(400, gin.H{"error": fmt.Sprintf("Sensor with id %s does already exist", request.Id)})
+		return
+	}
+
 	if err := c.validateSensor(request); err != nil {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -65,7 +71,7 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 	}
 
 	sensor := &models.Sensor{
-		ID:              uuid.NewString(),
+		ID:              request.Id,
 		Name:            request.Name,
 		DeviceID:        deviceId,
 		DataType:        models.DataType(request.DataType),

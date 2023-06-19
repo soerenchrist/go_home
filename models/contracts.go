@@ -6,6 +6,7 @@ type CreateDeviceRequest struct {
 }
 
 type CreateSensorRequest struct {
+	Id              string          `json:"id"`
 	Name            string          `json:"name"`
 	DataType        DataType        `json:"data_type"`
 	Unit            string          `json:"unit"`

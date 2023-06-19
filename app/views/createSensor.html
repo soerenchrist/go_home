@@ -1,0 +1,133 @@
+{{define "head"}}
+<script>
+  function getDeviceId() {
+    let url = window.location.href;
+    let urlSplit = url.split("/");
+    let deviceId = urlSplit[urlSplit.length - 2];
+    return deviceId;
+  }
+  function load() {
+    let id_field = document.getElementById("id");
+    let name_field = document.getElementById("name");
+    let deviceId_field = document.getElementById("deviceId");
+    let datatype_field = document.getElementById("datatype");
+    let unit_field = document.getElementById("unit");
+    let type_field = document.getElementById("type");
+    let form = document.getElementById("sensorForm");
+
+    deviceId_field.value = getDeviceId();
+
+    name_field.oninput = function () {
+      id_field.value = name_field.value.toLowerCase().replace(/ /g, "_");
+    };
+
+    form.onsubmit = function (evt) {
+      evt.preventDefault();
+
+      if (name_field.value == "") {
+        error_message.innerHTML = "Name is required";
+        return;
+      }
+
+      let body = {
+        id: id_field.value,
+        name: name_field.value,
+        dataType: datatype_field.value,
+        unit: unit_field.value,
+        type: type_field.value,
+      };
+
+      fetch("/api/v1/devices/" + deviceId_field.value + "/sensors", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((response) => {
+          if (response.status == 201) {
+            window.location.href = "/devices/" + deviceId_field.value;
+          } else {
+            response
+              .json()
+              .then((data) => {
+                error_message.innerHTML = data.message;
+              })
+              .catch((error) => {
+                error_message.innerHTML = "Error creating sensor";
+              });
+          }
+        })
+        .catch((error) => {
+          error_message.innerHTML = "Error creating sensor";
+        });
+    };
+  }
+
+  window.onload = load;
+</script>
+{{end}} {{define "content"}}
+<h1 class="page_title">Create Sensor</h1>
+
+<div>
+  <form id="sensorForm">
+    <div class="input_form">
+      <label for="name">Id</label>
+      <input
+        id="id"
+        class="input_text"
+        name="id"
+        type="text"
+        placeholder="Id"
+        disabled
+      />
+
+      <label for="name">Name</label>
+      <input
+        id="name"
+        class="input_text"
+        name="name"
+        type="text"
+        placeholder="Name"
+      />
+
+      <label for="deviceId">Device Id</label>
+      <input
+        id="deviceId"
+        class="input_text"
+        name="deviceId"
+        type="text"
+        placeholder="DeviceId"
+        disabled
+      />
+
+      <label for="datatype">Data Type</label>
+      <select id="datatype" name="datatype">
+        <option value="string">String</option>
+        <option value="int">Int</option>
+        <option value="float">Float</option>
+        <option value="bool">Boolean</option>
+      </select>
+
+      <label for="unit">Unit</label>
+      <input
+        id="unit"
+        class="input_text"
+        name="unit"
+        type="text"
+        placeholder="Unit"
+      />
+
+      <label for="type">Type</label>
+      <select id="type" name="type">
+        <option value="external">External</option>
+        <option value="polling">Polling</option>
+      </select>
+
+      <span id="error_message" class="error_message"></span>
+
+      <button type="submit">Create</button>
+    </div>
+  </form>
+</div>
+{{end}}

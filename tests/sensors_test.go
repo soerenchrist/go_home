@@ -33,6 +33,7 @@ func TestGetSensors_ShouldReturnSensors_WhenDeviceDoesExist(t *testing.T) {
 
 func TestCreateSensor_ShouldReturn400_WhenBodyIsInvalid(t *testing.T) {
 	body := `{
+		"id": "test_sensor",
 		"name": "Test Sensor"
 	`
 	w := RecordPostCall(t, "/api/v1/devices/1/sensors", body)
@@ -43,6 +44,7 @@ func TestCreateSensor_ShouldReturn400_WhenBodyIsInvalid(t *testing.T) {
 
 func TestCreateSensor_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
 	body := `{
+		"id": "test_sensor",
 		"name": "Test Sensor"
 	}
 	`
@@ -52,22 +54,38 @@ func TestCreateSensor_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
 	assertErrorMessageEquals(t, w.Body.Bytes(), "Device not found")
 }
 
+func TestCreateSensor_ShouldReturn400_WhenSensorDoesAlreadyExist(t *testing.T) {
+	body := `{
+		"id": "S1",
+		"name": "Test Sensor"
+	}
+	`
+	w := RecordPostCall(t, "/api/v1/devices/1/sensors", body)
+
+	assert.Equal(t, w.Code, 400)
+	assertErrorMessageEquals(t, w.Body.Bytes(), "Sensor with id S1 does already exist")
+}
+
 func TestCreateSensor_ShouldReturn400_WhenSensorIsInvalid(t *testing.T) {
 	bodies := []string{
 		`{
+			"id": "my_sensor",
 			"name": "T"
 		}`,
 		`{
+			"id": "my_sensor",
 			"name": "Test Sensor",
 			"unit": "XX",
 			"data_type": "bool"
 		}`,
 		`{
+			"id": "my_sensor",
 			"name": "Test Sensor",
 			"unit": "XX",
 			"data_type": "string"
 		}`,
 		`{
+			"id": "my_sensor",
 			"name": "Test Sensor",
 			"data_type": "int",
 			"type": "polling",
@@ -76,6 +94,7 @@ func TestCreateSensor_ShouldReturn400_WhenSensorIsInvalid(t *testing.T) {
 			"polling_endpoint": "http://"
 		}`,
 		`{
+			"id": "my_sensor",
 			"name": "Test Sensor",
 			"data_type": "float",
 			"type": "polling",
@@ -84,6 +103,7 @@ func TestCreateSensor_ShouldReturn400_WhenSensorIsInvalid(t *testing.T) {
 			"polling_endpoint": ""
 		}`,
 		`{
+			"id": "my_sensor",
 			"name": "Test Sensor",
 			"data_type": "float",
 			"type": "polling",
@@ -113,6 +133,7 @@ func TestCreateSensor_ShouldReturn400_WhenSensorIsInvalid(t *testing.T) {
 
 func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 	body := `{
+		"id": "my_sensor",
 		"name": "Test Sensor",
 		"data_type": "float",
 		"type": "polling",
@@ -128,6 +149,7 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 		}
 
 		assert.Equal(t, 3, len(sensors))
+		assert.Equal(t, "my_sensor", sensors[2].ID)
 		assert.Equal(t, "Test Sensor", sensors[2].Name)
 		assert.Equal(t, models.DataTypeFloat, sensors[2].DataType)
 		assert.Equal(t, models.SensorTypePolling, sensors[2].Type)
@@ -145,6 +167,8 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	assert.Equal(t, "my_sensor", sensor.ID)
 	assert.Equal(t, "Test Sensor", sensor.Name)
 	assert.Equal(t, models.DataTypeFloat, sensor.DataType)
 	assert.Equal(t, models.SensorTypePolling, sensor.Type)

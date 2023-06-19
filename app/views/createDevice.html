@@ -1,87 +1,87 @@
-{{define "head"}}
-<script>
-  function load() {
-    let id_field = document.getElementById("id");
-    let name_field = document.getElementById("name");
-    let form = document.getElementById("deviceForm");
-    let error_message = document.getElementById("error_message");
+  {{define "head"}}
+  <script>
+    function load() {
+      let id_field = document.getElementById("id");
+      let name_field = document.getElementById("name");
+      let form = document.getElementById("deviceForm");
+      let error_message = document.getElementById("error_message");
 
-    name_field.oninput = function () {
-      id_field.value = name_field.value.toLowerCase().replace(/ /g, "_");
-    };
-
-    form.onsubmit = function (evt) {
-      evt.preventDefault();
-
-      error_message.innerHTML = "";
-      if (name_field.value == "") {
-        error_message.innerHTML = "Name is required";
-        return;
-      }
-
-      let body = {
-        id: id_field.value,
-        name: name_field.value,
+      name_field.oninput = function () {
+        id_field.value = name_field.value.toLowerCase().replace(/ /g, "_");
       };
 
-      fetch("/api/v1/devices", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      })
-        .then((response) => {
-          if (response.status == 201) {
-            window.location.href = "/";
-          } else {
-            response
-              .json()
-              .then((data) => {
-                error_message.innerHTML = data.message;
-              })
-              .catch((error) => {
-                error_message.innerHTML = "Error creating device";
-              });
-          }
+      form.onsubmit = function (evt) {
+        evt.preventDefault();
+
+        error_message.innerHTML = "";
+        if (name_field.value == "") {
+          error_message.innerHTML = "Name is required";
+          return;
+        }
+
+        let body = {
+          id: id_field.value,
+          name: name_field.value,
+        };
+
+        fetch("/api/v1/devices", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
         })
-        .catch((error) => {
-          error_message.innerHTML = "Error creating device";
-        });
-    };
-  }
+          .then((response) => {
+            if (response.status == 201) {
+              window.location.href = "/";
+            } else {
+              response
+                .json()
+                .then((data) => {
+                  error_message.innerHTML = data.message;
+                })
+                .catch((error) => {
+                  error_message.innerHTML = "Error creating device";
+                });
+            }
+          })
+          .catch((error) => {
+            error_message.innerHTML = "Error creating device";
+          });
+      };
+    }
 
-  window.onload = load;
-</script>
-{{end}} {{define "content"}}
-<h1 class="page_title">Create Device</h1>
+    window.onload = load;
+  </script>
+  {{end}} {{define "content"}}
+  <h1 class="page_title">Create Device</h1>
 
-<div>
-  <form id="deviceForm">
-    <div class="input_form">
-      <label for="name">Id</label>
-      <input
-        id="id"
-        class="input_text"
-        name="id"
-        type="text"
-        placeholder="Id"
-        disabled
-      />
+  <div>
+    <form id="deviceForm">
+      <div class="input_form">
+        <label for="name">Id</label>
+        <input
+          id="id"
+          class="input_text"
+          name="id"
+          type="text"
+          placeholder="Id"
+          disabled
+        />
 
-      <label for="name">Name</label>
-      <input
-        id="name"
-        class="input_text"
-        name="name"
-        type="text"
-        placeholder="Name"
-      />
+        <label for="name">Name</label>
+        <input
+          id="name"
+          class="input_text"
+          name="name"
+          type="text"
+          placeholder="Name"
+        />
 
-      <span id="error_message" class="error_message"></span>
+        <span id="error_message" class="error_message"></span>
 
-      <button type="submit">Create</button>
-    </div>
-  </form>
-</div>
-{{end}}
+        <button type="submit">Create</button>
+      </div>
+    </form>
+  </div>
+  {{end}}

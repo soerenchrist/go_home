@@ -38,6 +38,7 @@ func (app *App) ServeHtml() {
 	app.router.GET("/devices/:deviceId/commands/:commandId", app.command)
 
 	app.router.GET("/createDevice", app.createDevice)
+	app.router.GET("/devices/:deviceId/createSensor", app.createSensor)
 
 	app.router.Static("/static", "./app/views/static")
 }
