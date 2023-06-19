@@ -3,9 +3,8 @@ package models
 import "fmt"
 
 type Device struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	LastReached string `json:"last_reached"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func (d *Device) String() string {

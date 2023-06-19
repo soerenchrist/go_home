@@ -1,6 +1,7 @@
 package models
 
 type CreateDeviceRequest struct {
+	Id   string `json:"id"`
 	Name string `json:"name"`
 }
 

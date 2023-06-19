@@ -5,6 +5,6 @@ database:
   path: "database.db"
   seed: true
 mqtt:
-  enabled: true
+  enabled: false
   port: 8883
   clientId: "gohome-1"

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"github.com/soerenchrist/go_home/models"
+	"fmt"
 
-	"github.com/google/uuid"
+	"github.com/soerenchrist/go_home/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -39,18 +39,23 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 		return
 	}
 
+	_, err := c.database.GetDevice(request.Id)
+	if err == nil {
+		context.JSON(400, gin.H{"error": fmt.Sprintf("Device with id %s does already exist", request.Id)})
+		return
+	}
+
 	if err := c.validateDevice(request); err != nil {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
 	device := models.Device{
-		ID:          uuid.NewString(),
-		Name:        request.Name,
-		LastReached: "Never",
+		ID:   request.Id,
+		Name: request.Name,
 	}
 
-	err := c.database.AddDevice(&device)
+	err = c.database.AddDevice(&device)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
 		return

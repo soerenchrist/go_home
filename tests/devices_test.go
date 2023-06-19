@@ -25,6 +25,7 @@ func TestGetDevices(t *testing.T) {
 
 func TestCreateDevice_ShouldReturnTheCreatedDevice_WhenTheBodyIsValid(t *testing.T) {
 	body := `{
+		"id": "my_device",
 		"name": "Test Device"
 	}`
 	w := RecordPostCall(t, "/api/v1/devices", body)
@@ -38,11 +39,12 @@ func TestCreateDevice_ShouldReturnTheCreatedDevice_WhenTheBodyIsValid(t *testing
 	}
 
 	assert.Equal(t, "Test Device", data.Name)
-	assert.Equal(t, IsValidUuid(data.ID), true)
+	assert.Equal(t, "my_device", data.ID)
 }
 
 func TestCreateDevice_ShouldReturn400_WhenBodyIsInvalid(t *testing.T) {
 	body := `{
+		"id": "my_device",
 		"name": "Test Device"
 	`
 	w := RecordPostCall(t, "/api/v1/devices", body)
@@ -52,6 +54,18 @@ func TestCreateDevice_ShouldReturn400_WhenBodyIsInvalid(t *testing.T) {
 
 func TestCreateDevice_ShouldReturn400_WhenNameIsNotValid(t *testing.T) {
 	body := `{
+		"id": "my_device",
+		"name": "XX"
+	}
+	`
+	w := RecordPostCall(t, "/api/v1/devices", body)
+
+	assert.Equal(t, w.Code, 400)
+}
+
+func TestCreateDevice_ShouldReturn400_WhenIdIsAlreadyTaken(t *testing.T) {
+	body := `{
+		"id": "1",
 		"name": "XX"
 	}
 	`
@@ -62,6 +76,7 @@ func TestCreateDevice_ShouldReturn400_WhenNameIsNotValid(t *testing.T) {
 
 func TestCreateDevice_ShouldBeInDatabase_WhenDataIsValid(t *testing.T) {
 	body := `{
+		"id": "my_device",
 		"name": "TestDevice"
 	}
 	`
@@ -75,7 +90,7 @@ func TestCreateDevice_ShouldBeInDatabase_WhenDataIsValid(t *testing.T) {
 
 		assert.Equal(t, 3, len(devices))
 		assert.Equal(t, "TestDevice", devices[2].Name)
-		assert.Equal(t, IsValidUuid(devices[2].ID), true)
+		assert.Equal(t, "my_device", devices[2].ID)
 	}
 
 	w := RecordPostCallWithDb(t, "/api/v1/devices", body, validateDb)

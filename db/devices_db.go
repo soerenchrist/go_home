@@ -10,14 +10,14 @@ func (db *SqliteDevicesDatabase) AddDevice(device *models.Device) error {
 		return err
 	}
 
-	stmt, err := tx.Prepare("insert into devices(id, name, last_reached) values(?, ?, ?)")
+	stmt, err := tx.Prepare("insert into devices(id, name) values(?, ?)")
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 
-	_, err = stmt.Exec(device.ID, device.Name, device.LastReached)
+	_, err = stmt.Exec(device.ID, device.Name)
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func (db *SqliteDevicesDatabase) AddDevice(device *models.Device) error {
 }
 
 func (db *SqliteDevicesDatabase) GetDevice(id string) (*models.Device, error) {
-	stmt, err := db.db.Prepare("select id, name, last_reached from devices where id = ?")
+	stmt, err := db.db.Prepare("select id, name from devices where id = ?")
 	if err != nil {
 		return nil, err
 	}
@@ -36,13 +36,12 @@ func (db *SqliteDevicesDatabase) GetDevice(id string) (*models.Device, error) {
 
 	var deviceId string
 	var name string
-	var lastReached string
-	err = stmt.QueryRow(id).Scan(&deviceId, &name, &lastReached)
+	err = stmt.QueryRow(id).Scan(&deviceId, &name)
 	if err != nil {
 		return nil, err
 	}
 
-	return &models.Device{ID: deviceId, Name: name, LastReached: lastReached}, nil
+	return &models.Device{ID: deviceId, Name: name}, nil
 }
 
 func (db *SqliteDevicesDatabase) DeleteDevice(id string) error {
@@ -66,7 +65,7 @@ func (db *SqliteDevicesDatabase) DeleteDevice(id string) error {
 }
 
 func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
-	rows, err := db.db.Query("select id, name, last_reached from devices")
+	rows, err := db.db.Query("select id, name from devices")
 	if err != nil {
 		return nil, err
 	}
@@ -77,12 +76,11 @@ func (db *SqliteDevicesDatabase) ListDevices() ([]models.Device, error) {
 	for rows.Next() {
 		var id string
 		var name string
-		var lastReached string
-		err = rows.Scan(&id, &name, &lastReached)
+		err = rows.Scan(&id, &name)
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, models.Device{ID: id, Name: name, LastReached: lastReached})
+		results = append(results, models.Device{ID: id, Name: name})
 	}
 
 	err = rows.Err()
@@ -97,8 +95,7 @@ func (database *SqliteDevicesDatabase) createDeviceTable() error {
 	createDevicesTableStmt := `
 	create table if not exists devices (
 		id text not null primary key,
-		name text,
-		last_reached text
+		name text
 	);
 	`
 	if _, err := database.db.Exec(createDevicesTableStmt); err != nil {
