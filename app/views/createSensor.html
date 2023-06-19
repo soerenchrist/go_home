@@ -1,4 +1,5 @@
 {{define "head"}}
+<script src="/static/js/common.js"></script>
 <script>
   function getDeviceId() {
     let url = window.location.href;
@@ -37,30 +38,16 @@
         type: type_field.value,
       };
 
-      fetch("/api/v1/devices/" + deviceId_field.value + "/sensors", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      createSensor(
+        body,
+        deviceId_field.value,
+        function () {
+          window.location.href = "/devices/" + deviceId_field.value;
         },
-        body: JSON.stringify(body),
-      })
-        .then((response) => {
-          if (response.status == 201) {
-            window.location.href = "/devices/" + deviceId_field.value;
-          } else {
-            response
-              .json()
-              .then((data) => {
-                error_message.innerHTML = data.message;
-              })
-              .catch((error) => {
-                error_message.innerHTML = "Error creating sensor";
-              });
-          }
-        })
-        .catch((error) => {
-          error_message.innerHTML = "Error creating sensor";
-        });
+        function (error) {
+          error_message.innerHTML = error;
+        }
+      );
     };
   }
 
