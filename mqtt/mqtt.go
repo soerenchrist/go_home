@@ -3,6 +3,7 @@ package mqtt
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -56,8 +57,23 @@ func ConnectToBroker(config MqttConfig, publish PublishChannel) error {
 	log.Println("Connected to MQTT broker... Listening for publishes")
 
 	go listenForPublishes(client, publish)
+	subscribe(client)
 
 	return nil
+}
+
+func subscribe(client mqtt.Client) {
+	topic := "home/+/+/data"
+	token := client.Subscribe(topic, 0, func(client mqtt.Client, msg mqtt.Message) {
+		parts := strings.Split(msg.Topic(), "/")
+		device := parts[1]
+		sensor := parts[2]
+
+		log.Printf("Received message for device %s, sensor %s: %s", device, sensor, msg.Payload())
+	})
+	token.Wait()
+	fmt.Printf("Subscribed to topic: %s\n", topic)
+
 }
 
 func listenForPublishes(client mqtt.Client, publish PublishChannel) {
