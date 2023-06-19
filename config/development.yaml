@@ -5,6 +5,8 @@ database:
   path: "database.db"
   seed: true
 mqtt:
-  enabled: false
-  port: 8883
+  enabled: true
   clientId: "gohome-1"
+  bridge:
+    port: 8081
+    host: localhost

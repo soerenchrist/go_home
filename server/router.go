@@ -12,9 +12,7 @@ import (
 )
 
 func NewRouter(database db.Database, outputBindings chan models.SensorValue) *gin.Engine {
-	router := gin.New()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	router := gin.Default()
 
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()

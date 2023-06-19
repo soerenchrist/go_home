@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/go_home/background"
 	"github.com/soerenchrist/go_home/config"
@@ -13,6 +16,11 @@ import (
 	"github.com/soerenchrist/go_home/mqtt"
 	"github.com/soerenchrist/go_home/rules/evaluation"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
+)
+
+var (
+	g errgroup.Group
 )
 
 func Init() {
@@ -33,15 +41,59 @@ func Init() {
 	outputBindings := make(chan models.SensorValue, 10)
 	// TODO: Refactor outputbindings channel passing around
 	addRulesEngine(database, outputBindings)
-	addMqttBinding(config, database, outputBindings)
 
+	runHomeServer(config, database, outputBindings)
+	runMqttBridge(config)
+
+	if err := g.Wait(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func runHomeServer(config *viper.Viper, database db.Database, outputBindings chan models.SensorValue) {
 	r := NewRouter(database, outputBindings)
 
 	port := config.GetString("server.port")
 	host := config.GetString("server.host")
 
 	addr := fmt.Sprintf("%s:%s", host, port)
-	r.Run(addr)
+
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      r,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	g.Go(func() error {
+		log.Printf("Starting home server on %s\n", addr)
+		return server.ListenAndServe()
+	})
+}
+
+func runMqttBridge(config *viper.Viper) {
+	router, err := addMqttBridge(config)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	port := config.GetString("mqtt.bridge.port")
+	host := config.GetString("mqtt.bridge.host")
+
+	addr := fmt.Sprintf("%s:%s", host, port)
+
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      router,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	g.Go(func() error {
+		log.Printf("Starting MQTT bridge on %s\n", addr)
+		return server.ListenAndServe()
+	})
 }
 
 func addRulesEngine(database db.Database, outputBindings chan models.SensorValue) {
@@ -51,10 +103,10 @@ func addRulesEngine(database db.Database, outputBindings chan models.SensorValue
 	go background.PollSensorValues(database, outputBindings)
 }
 
-func addMqttBinding(config *viper.Viper, database db.Database, outputBindings chan models.SensorValue) {
+func addMqttBridge(config *viper.Viper) (*gin.Engine, error) {
 	enabled := config.GetBool("mqtt.enabled")
 	if !enabled {
-		return
+		return nil, fmt.Errorf("MQTT bridge is not enabled")
 	}
 
 	host := config.GetString("mqtt.host")
@@ -73,10 +125,13 @@ func addMqttBinding(config *viper.Viper, database db.Database, outputBindings ch
 
 	publishChannel := make(chan mqtt.Message, 10)
 
-	err := mqtt.AddMqttBinding(options, publishChannel, database, outputBindings)
+	err := mqtt.ConnectToBroker(options, publishChannel)
 	if err != nil {
-		log.Println("Failed to add MQTT binding: ", err)
+		return nil, fmt.Errorf("Failed to add MQTT binding: ", err)
 	}
+
+	router := mqtt.NewMqttRouter(publishChannel)
+	return router, nil
 }
 
 func openDatabase(path string) *sql.DB {

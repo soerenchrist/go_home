@@ -1,0 +1,6 @@
+POST http://localhost:8081/api/v1/publish/topic
+Content-Type: "application/json"
+
+{
+    "Hello": "World"
+}
