@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/command"
+	"github.com/soerenchrist/go_home/internal/device"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
 type WhenExpression string
@@ -13,11 +16,11 @@ type ThenExpression string
 type RulesDatabase interface {
 	AddRule(rule *Rule) error
 	ListRules() ([]Rule, error)
-	GetSensor(deviceId, sensorId string) (*models.Sensor, error)
-	GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
-	GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error)
-	GetCommand(deviceId, commandId string) (*models.Command, error)
-	GetDevice(deviceId string) (*models.Device, error)
+	GetSensor(deviceId, sensorId string) (*sensor.Sensor, error)
+	GetCurrentSensorValue(deviceId, sensorId string) (*value.SensorValue, error)
+	GetPreviousSensorValue(deviceId, sensorId string) (*value.SensorValue, error)
+	GetCommand(deviceId, commandId string) (*command.Command, error)
+	GetDevice(deviceId string) (*device.Device, error)
 }
 
 type Rule struct {
@@ -237,4 +240,10 @@ func (rule *Rule) isOperator(token string) bool {
 
 func (rule *Rule) isBooleanOperator(token string) bool {
 	return strings.ToUpper(token) == "AND" || strings.ToUpper(token) == "OR"
+}
+
+type CreateRuleRequest struct {
+	Name string `json:"name"`
+	When string `json:"when"`
+	Then string `json:"then"`
 }

@@ -7,21 +7,22 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
 type RequestStrategy interface {
-	PerformRequest(sensor *models.Sensor) (*models.SensorValue, error)
+	PerformRequest(sensor *sensor.Sensor) (*value.SensorValue, error)
 }
 
 type PingStrategy struct{}
 
-func (s *PingStrategy) PerformRequest(sensor *models.Sensor) (*models.SensorValue, error) {
-	if sensor.DataType != models.DataTypeBool {
+func (strgy *PingStrategy) PerformRequest(s *sensor.Sensor) (*value.SensorValue, error) {
+	if s.DataType != sensor.DataTypeBool {
 		return nil, fmt.Errorf("PingStrategy can only be used with boolean data types")
 	}
 
-	pinger, err := ping.NewPinger(sensor.PollingEndpoint)
+	pinger, err := ping.NewPinger(s.PollingEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -34,14 +35,14 @@ func (s *PingStrategy) PerformRequest(sensor *models.Sensor) (*models.SensorValu
 	}
 
 	stats := pinger.Statistics()
-	log.Printf("Ping %s: %v\n", sensor.PollingEndpoint, stats)
+	log.Printf("Ping %s: %v\n", s.PollingEndpoint, stats)
 
 	reachable := stats.PacketsRecv > 0
 
-	return &models.SensorValue{
+	return &value.SensorValue{
 		Value:     strconv.FormatBool(reachable),
-		SensorID:  sensor.ID,
-		DeviceID:  sensor.DeviceID,
+		SensorID:  s.ID,
+		DeviceID:  s.DeviceID,
 		Timestamp: time.Now(),
 	}, nil
 }

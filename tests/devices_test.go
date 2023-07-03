@@ -6,7 +6,7 @@ import (
 
 	"github.com/magiconair/properties/assert"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/device"
 )
 
 func TestGetDevices(t *testing.T) {
@@ -14,7 +14,7 @@ func TestGetDevices(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 
-	var data []models.Device
+	var data []device.Device
 	err := json.Unmarshal(w.Body.Bytes(), &data)
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,7 @@ func TestCreateDevice_ShouldReturnTheCreatedDevice_WhenTheBodyIsValid(t *testing
 
 	assert.Equal(t, w.Code, 201)
 
-	var data models.Device
+	var data device.Device
 	err := json.Unmarshal(w.Body.Bytes(), &data)
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +108,7 @@ func TestGetDevice_ShouldReturnDevice_WhenTheGivenIdDoesExist(t *testing.T) {
 	w := RecordGetCall(t, "/api/v1/devices/1")
 
 	assert.Equal(t, w.Code, 200)
-	var data models.Device
+	var data device.Device
 	err := json.Unmarshal(w.Body.Bytes(), &data)
 	if err != nil {
 		t.Fatal(err)

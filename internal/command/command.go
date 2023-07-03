@@ -1,4 +1,4 @@
-package models
+package command
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/util"
 )
 
@@ -26,7 +27,7 @@ func (c *Command) String() string {
 	return fmt.Sprintf("Command<%s %s>", c.ID, c.Name)
 }
 
-func (c *Command) Invoke(device *Device, params *CommandParameters) (*http.Response, error) {
+func (c *Command) Invoke(device *device.Device, params *CommandParameters) (*http.Response, error) {
 	body, err := c.prepareBody(device, params)
 	if err != nil {
 		return nil, err
@@ -39,7 +40,7 @@ func (c *Command) Invoke(device *Device, params *CommandParameters) (*http.Respo
 	return http.DefaultClient.Do(req)
 }
 
-func (command *Command) prepareBody(device *Device, params *CommandParameters) (io.Reader, error) {
+func (command *Command) prepareBody(device *device.Device, params *CommandParameters) (io.Reader, error) {
 	if len(command.PayloadTemplate) == 0 {
 		return nil, nil
 	}
@@ -76,4 +77,11 @@ func PrepareCommandTemplate(payloadTemplate string, params *TemplateParameters) 
 	}
 
 	return strings.NewReader(b.String()), nil
+}
+
+type CreateCommandRequest struct {
+	Name            string `json:"name"`
+	PayloadTemplate string `json:"payload_template"`
+	Endpoint        string `json:"endpoint"`
+	Method          string `json:"method"`
 }

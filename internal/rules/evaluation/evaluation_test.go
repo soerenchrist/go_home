@@ -5,9 +5,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/command"
+	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/rules"
 	"github.com/soerenchrist/go_home/internal/rules/evaluation"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
 func TestDetermineUsedSensorValues_ShouldFindCorrectValues(t *testing.T) {
@@ -89,22 +92,22 @@ func (db FakeDatabase) AddRule(rule *rules.Rule) error {
 	return nil
 }
 
-func (db FakeDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, error) {
+func (db FakeDatabase) GetSensor(deviceId, sensorId string) (*sensor.Sensor, error) {
 	if deviceId == "device1" && sensorId == "sensor1" {
-		return &models.Sensor{
+		return &sensor.Sensor{
 			DeviceID: "device1",
 			ID:       "sensor1",
-			Type:     models.SensorTypeExternal,
-			DataType: models.DataTypeInt,
+			Type:     sensor.SensorTypeExternal,
+			DataType: sensor.DataTypeInt,
 			Name:     "Sensor 1",
 			IsActive: true,
 		}, nil
 	} else if deviceId == "device2" && sensorId == "sensor2" {
-		return &models.Sensor{
+		return &sensor.Sensor{
 			DeviceID: "device2",
 			ID:       "sensor2",
-			Type:     models.SensorTypeExternal,
-			DataType: models.DataTypeBool,
+			Type:     sensor.SensorTypeExternal,
+			DataType: sensor.DataTypeBool,
 			Name:     "Sensor 2",
 			IsActive: true,
 		}, nil
@@ -112,8 +115,8 @@ func (db FakeDatabase) GetSensor(deviceId, sensorId string) (*models.Sensor, err
 	return nil, fmt.Errorf("Sensor not found for %s.%s", deviceId, sensorId)
 }
 
-func (db FakeDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
-	sensorValues := map[string]*models.SensorValue{
+func (db FakeDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*value.SensorValue, error) {
+	sensorValues := map[string]*value.SensorValue{
 		"device1.sensor1": {
 			SensorID:  "sensor1",
 			DeviceID:  "device1",
@@ -136,8 +139,8 @@ func (db FakeDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*models
 	return nil, fmt.Errorf("Sensor value not found for %s", key)
 }
 
-func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*models.SensorValue, error) {
-	sensorValues := map[string]*models.SensorValue{
+func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*value.SensorValue, error) {
+	sensorValues := map[string]*value.SensorValue{
 		"device1.sensor1": {
 			SensorID:  "sensor1",
 			DeviceID:  "device1",
@@ -160,11 +163,11 @@ func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*model
 	return nil, fmt.Errorf("Sensor value not found for %s", key)
 }
 
-func (db FakeDatabase) GetCommand(deviceId, commandId string) (*models.Command, error) {
+func (db FakeDatabase) GetCommand(deviceId, commandId string) (*command.Command, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 
-func (db FakeDatabase) GetDevice(deviceId string) (*models.Device, error) {
+func (db FakeDatabase) GetDevice(deviceId string) (*device.Device, error) {
 	return nil, fmt.Errorf("Not implemented")
 }
 

@@ -1,4 +1,4 @@
-package controllers
+package value
 
 import (
 	"fmt"
@@ -7,24 +7,26 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/device"
+	"github.com/soerenchrist/go_home/internal/errors"
+	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/util"
 )
 
 type SensorValuesDatabase interface {
-	GetSensorValuesSince(deviceId string, sensorId string, since time.Time) ([]models.SensorValue, error)
-	GetSensor(deviceId string, sensorId string) (*models.Sensor, error)
-	GetDevice(deviceId string) (*models.Device, error)
-	GetCurrentSensorValue(deviceId string, sensorId string) (*models.SensorValue, error)
-	AddSensorValue(sensorValue *models.SensorValue) error
+	GetSensorValuesSince(deviceId string, sensorId string, since time.Time) ([]SensorValue, error)
+	GetSensor(deviceId string, sensorId string) (*sensor.Sensor, error)
+	GetDevice(deviceId string) (*device.Device, error)
+	GetCurrentSensorValue(deviceId string, sensorId string) (*SensorValue, error)
+	AddSensorValue(sensorValue *SensorValue) error
 }
 
 type SensorValuesController struct {
 	database       SensorValuesDatabase
-	outputBindings chan models.SensorValue
+	outputBindings chan SensorValue
 }
 
-func NewSensorValuesController(database SensorValuesDatabase, outputBindings chan models.SensorValue) *SensorValuesController {
+func NewSensorValuesController(database SensorValuesDatabase, outputBindings chan SensorValue) *SensorValuesController {
 	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 
@@ -81,7 +83,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		return
 	}
 
-	var request models.AddSensorValueRequest
+	var request AddSensorValueRequest
 
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(400, gin.H{"error": err.Error()})
@@ -99,7 +101,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 
 	time, _ := time.Parse(time.RFC3339, request.Timestamp)
 
-	sensorValue := &models.SensorValue{
+	sensorValue := &SensorValue{
 		Value:     request.Value,
 		Timestamp: time,
 		DeviceID:  device.ID,
@@ -116,52 +118,52 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 	context.JSON(201, sensorValue)
 }
 
-func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*models.Sensor, *models.Device, error) {
+func (c *SensorValuesController) getSensorAndDevice(context *gin.Context) (*sensor.Sensor, *device.Device, error) {
 	deviceId := context.Param("deviceId")
 	sensorId := context.Param("sensorId")
 
-	var device *models.Device
-	var sensor *models.Sensor
+	var d *device.Device
+	var s *sensor.Sensor
 
 	var err error
 
-	if device, err = c.database.GetDevice(deviceId); err != nil {
-		return &models.Sensor{}, &models.Device{}, &models.NotFoundError{Message: "Device not found"}
+	if d, err = c.database.GetDevice(deviceId); err != nil {
+		return &sensor.Sensor{}, &device.Device{}, &errors.NotFoundError{Message: "Device not found"}
 	}
 
-	if sensor, err = c.database.GetSensor(deviceId, sensorId); err != nil {
-		return &models.Sensor{}, &models.Device{}, &models.NotFoundError{Message: "Sensor not found"}
+	if s, err = c.database.GetSensor(deviceId, sensorId); err != nil {
+		return &sensor.Sensor{}, &device.Device{}, &errors.NotFoundError{Message: "Sensor not found"}
 	}
 
-	return sensor, device, nil
+	return s, d, nil
 }
 
-func (c *SensorValuesController) validateSensorData(sensor *models.Sensor, request *models.AddSensorValueRequest) error {
-	if sensor.DataType == models.DataTypeInt {
+func (c *SensorValuesController) validateSensorData(s *sensor.Sensor, request *AddSensorValueRequest) error {
+	if s.DataType == sensor.DataTypeInt {
 		if _, err := strconv.Atoi(request.Value); err != nil {
-			return &models.ValidationError{Message: "Sensor value is not an int"}
+			return &errors.ValidationError{Message: "Sensor value is not an int"}
 		}
-	} else if sensor.DataType == models.DataTypeFloat {
+	} else if s.DataType == sensor.DataTypeFloat {
 		if _, err := strconv.ParseFloat(request.Value, 64); err != nil {
-			return &models.ValidationError{Message: "Sensor value is not a float"}
+			return &errors.ValidationError{Message: "Sensor value is not a float"}
 		}
-	} else if sensor.DataType == models.DataTypeBool {
+	} else if s.DataType == sensor.DataTypeBool {
 		if _, err := strconv.ParseBool(request.Value); err != nil {
-			return &models.ValidationError{Message: "Sensor value is not a bool"}
+			return &errors.ValidationError{Message: "Sensor value is not a bool"}
 		}
 	}
 
-	if sensor.Type == models.SensorTypePolling {
-		return &models.ValidationError{Message: "Sending values to a polling sensor is not allowed"}
+	if s.Type == sensor.SensorTypePolling {
+		return &errors.ValidationError{Message: "Sending values to a polling sensor is not allowed"}
 	}
 
-	if !sensor.IsActive {
-		return &models.ValidationError{Message: "Sensor is not active"}
+	if !s.IsActive {
+		return &errors.ValidationError{Message: "Sensor is not active"}
 	}
 
 	if len(request.Timestamp) > 0 {
 		if err := util.ValidateTimestamp(request.Timestamp); err != nil {
-			return &models.ValidationError{Message: fmt.Sprintf("%s is not a valid RFC3339 timestamp", request.Timestamp)}
+			return &errors.ValidationError{Message: fmt.Sprintf("%s is not a valid RFC3339 timestamp", request.Timestamp)}
 		}
 	}
 

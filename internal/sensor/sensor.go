@@ -1,21 +1,6 @@
-package models
+package sensor
 
-import (
-	"fmt"
-	"time"
-)
-
-type Device struct {
-	ID   string `json:"id" gorm:"primaryKey"`
-	Name string `json:"name"`
-
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-func (d *Device) String() string {
-	return fmt.Sprintf("Device<%s %s>", d.ID, d.Name)
-}
+import "time"
 
 type Sensor struct {
 	ID              string          `json:"id" gorm:"primaryKey"`
@@ -55,9 +40,13 @@ const (
 	SensorTypePolling  SensorType = "polling"
 )
 
-type SensorValue struct {
-	SensorID  string    `json:"sensor_id"`
-	DeviceID  string    `json:"device_id"`
-	Value     string    `json:"value"`
-	Timestamp time.Time `json:"timestamp"`
+type CreateSensorRequest struct {
+	Id              string          `json:"id"`
+	Name            string          `json:"name"`
+	DataType        DataType        `json:"data_type"`
+	Unit            string          `json:"unit"`
+	Type            SensorType      `json:"type"`
+	PollingInterval int             `json:"polling_interval"`
+	PollingEndpoint string          `json:"polling_endpoint"`
+	PollingStrategy PollingStrategy `json:"polling_strategy"`
 }

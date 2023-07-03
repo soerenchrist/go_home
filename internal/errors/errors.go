@@ -1,4 +1,4 @@
-package models
+package errors
 
 type ValidationError struct {
 	Message string

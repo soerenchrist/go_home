@@ -9,8 +9,8 @@ import (
 
 	"github.com/magiconair/properties/assert"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
 	"github.com/soerenchrist/go_home/internal/server"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
 func TestAddSensorValue_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -117,7 +117,7 @@ func TestAddSensorValue_ShouldAddSensorValueToDb(t *testing.T) {
 
 	assert.Equal(t, w.Code, 201)
 
-	var result models.SensorValue
+	var result value.SensorValue
 	err := json.Unmarshal(w.Body.Bytes(), &result)
 	if err != nil {
 		t.Error(err)
@@ -153,18 +153,18 @@ func TestGetCurrentSensorValue_ShouldReturnSensorValue_WhenOneExists(t *testing.
 	filename := t.Name()
 	database := CreateTestDatabase(filename)
 	timestamp, _ := time.Parse(time.RFC3339, "2019-01-01T00:00:00Z")
-	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestamp})
+	err := database.AddSensorValue(&value.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestamp})
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan models.SensorValue))
+	router := server.NewRouter(database, make(chan value.SensorValue))
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/current", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)
 
-	var result models.SensorValue
+	var result value.SensorValue
 	err = json.Unmarshal(w.Body.Bytes(), &result)
 	if err != nil {
 		t.Error(err)
@@ -195,11 +195,11 @@ func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *tes
 
 	timestampOneHourAgo := time.Now().Add(-1*time.Hour - 1*time.Minute)
 
-	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
+	err := database.AddSensorValue(&value.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan models.SensorValue))
+	router := server.NewRouter(database, make(chan value.SensorValue))
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values", nil)
 	router.ServeHTTP(w, req)
@@ -216,17 +216,17 @@ func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.
 
 	timestampOneHourAgo := time.Now().Add(-1*time.Hour - 1*time.Minute)
 
-	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
+	err := database.AddSensorValue(&value.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan models.SensorValue))
+	router := server.NewRouter(database, make(chan value.SensorValue))
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values?timeframe=2h", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, w.Code, 200)
 
-	var result []models.SensorValue
+	var result []value.SensorValue
 	err = json.Unmarshal(w.Body.Bytes(), &result)
 	if err != nil {
 		t.Error(err)

@@ -6,17 +6,18 @@ import (
 	"time"
 
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
-func PollSensorValues(database db.Database, outputBinding chan models.SensorValue) {
+func PollSensorValues(database db.Database, outputBinding chan value.SensorValue) {
 	sensors, err := database.ListPollingSensors()
 	if err != nil {
 		panic(err)
 	}
 
 	lastPolls := createPollingMap(sensors)
-	channel := make(chan models.Sensor, 10)
+	channel := make(chan sensor.Sensor, 10)
 
 	go readChannel(database, channel, outputBinding)
 
@@ -36,7 +37,7 @@ func PollSensorValues(database db.Database, outputBinding chan models.SensorValu
 	}
 }
 
-func readChannel(database db.Database, channel chan models.Sensor, outputBinding chan models.SensorValue) {
+func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding chan value.SensorValue) {
 	for {
 		sensor := <-channel
 
@@ -60,16 +61,16 @@ func readChannel(database db.Database, channel chan models.Sensor, outputBinding
 	}
 }
 
-func getStrategy(sensor *models.Sensor) (RequestStrategy, error) {
-	switch sensor.PollingStrategy {
-	case models.PollingStrategyPing:
+func getStrategy(s *sensor.Sensor) (RequestStrategy, error) {
+	switch s.PollingStrategy {
+	case sensor.PollingStrategyPing:
 		return &PingStrategy{}, nil
 	}
 
-	return nil, fmt.Errorf("unknown polling strategy %s", sensor.PollingStrategy)
+	return nil, fmt.Errorf("unknown polling strategy %s", s.PollingStrategy)
 }
 
-func createPollingMap(sensors []models.Sensor) map[string]int64 {
+func createPollingMap(sensors []sensor.Sensor) map[string]int64 {
 	pollingMap := make(map[string]int64)
 
 	for _, sensor := range sensors {

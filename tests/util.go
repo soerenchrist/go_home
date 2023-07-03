@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
 	"github.com/soerenchrist/go_home/internal/server"
+	"github.com/soerenchrist/go_home/internal/value"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -47,7 +47,7 @@ func recordCall(t *testing.T, url string, method string, body io.Reader, dbValid
 	if dbValidator != nil {
 		defer dbValidator(database)
 	}
-	outputBindings := make(chan models.SensorValue, 10)
+	outputBindings := make(chan value.SensorValue, 10)
 	router := server.NewRouter(database, outputBindings)
 
 	req := httptest.NewRequest(method, url, body)

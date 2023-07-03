@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/magiconair/properties/assert"
+	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
 )
 
 func TestListCommands_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -21,7 +21,7 @@ func TestListCommands_ShouldReturnCommands(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
-	var commands []models.Command
+	var commands []command.Command
 	err := json.Unmarshal(w.Body.Bytes(), &commands)
 	if err != nil {
 		t.Fatal(err)
@@ -51,7 +51,7 @@ func TestGetCommand_ShouldReturnCommand(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
-	var command models.Command
+	var command command.Command
 	err := json.Unmarshal(w.Body.Bytes(), &command)
 	if err != nil {
 		t.Fatal(err)
@@ -133,16 +133,16 @@ func TestCreateCommand_ShouldAddCommandToDatabase(t *testing.T) {
 
 	assert.Equal(t, w.Code, 201)
 
-	var command models.Command
-	err := json.Unmarshal(w.Body.Bytes(), &command)
+	var c command.Command
+	err := json.Unmarshal(w.Body.Bytes(), &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, command.Name, "Test")
-	assert.Equal(t, command.Endpoint, "http://localhost:8080")
-	assert.Equal(t, command.PayloadTemplate, "on", "Response should contain payload template")
-	assert.Equal(t, command.Method, "POST")
+	assert.Equal(t, c.Name, "Test")
+	assert.Equal(t, c.Endpoint, "http://localhost:8080")
+	assert.Equal(t, c.PayloadTemplate, "on", "Response should contain payload template")
+	assert.Equal(t, c.Method, "POST")
 }
 
 func TestDeleteCommand_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {

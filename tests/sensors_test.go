@@ -6,7 +6,7 @@ import (
 
 	"github.com/magiconair/properties/assert"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/sensor"
 )
 
 func TestGetSensors_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -22,7 +22,7 @@ func TestGetSensors_ShouldReturnSensors_WhenDeviceDoesExist(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
-	var data []models.Sensor
+	var data []sensor.Sensor
 	err := json.Unmarshal(w.Body.Bytes(), &data)
 	if err != nil {
 		t.Fatal(err)
@@ -151,10 +151,10 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 		assert.Equal(t, 3, len(sensors))
 		assert.Equal(t, "my_sensor", sensors[2].ID)
 		assert.Equal(t, "Test Sensor", sensors[2].Name)
-		assert.Equal(t, models.DataTypeFloat, sensors[2].DataType)
-		assert.Equal(t, models.SensorTypePolling, sensors[2].Type)
+		assert.Equal(t, sensor.DataTypeFloat, sensors[2].DataType)
+		assert.Equal(t, sensor.SensorTypePolling, sensors[2].Type)
 		assert.Equal(t, 10, sensors[2].PollingInterval)
-		assert.Equal(t, models.PollingStrategyPing, sensors[2].PollingStrategy)
+		assert.Equal(t, sensor.PollingStrategyPing, sensors[2].PollingStrategy)
 		assert.Equal(t, "http://", sensors[2].PollingEndpoint)
 	}
 
@@ -162,19 +162,19 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 
 	assert.Equal(t, w.Code, 201)
 
-	var sensor models.Sensor
-	err := json.Unmarshal(w.Body.Bytes(), &sensor)
+	var s sensor.Sensor
+	err := json.Unmarshal(w.Body.Bytes(), &s)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "my_sensor", sensor.ID)
-	assert.Equal(t, "Test Sensor", sensor.Name)
-	assert.Equal(t, models.DataTypeFloat, sensor.DataType)
-	assert.Equal(t, models.SensorTypePolling, sensor.Type)
-	assert.Equal(t, 10, sensor.PollingInterval)
-	assert.Equal(t, models.PollingStrategyPing, sensor.PollingStrategy)
-	assert.Equal(t, "http://", sensor.PollingEndpoint)
+	assert.Equal(t, "my_sensor", s.ID)
+	assert.Equal(t, "Test Sensor", s.Name)
+	assert.Equal(t, sensor.DataTypeFloat, s.DataType)
+	assert.Equal(t, sensor.SensorTypePolling, s.Type)
+	assert.Equal(t, 10, s.PollingInterval)
+	assert.Equal(t, sensor.PollingStrategyPing, s.PollingStrategy)
+	assert.Equal(t, "http://", s.PollingEndpoint)
 }
 
 func TestDeleteSensor_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -224,15 +224,15 @@ func TestGetSensor_ShouldReturnSensor_WhenSensorDoesExist(t *testing.T) {
 
 	assert.Equal(t, w.Code, 200)
 
-	var sensor models.Sensor
-	err := json.Unmarshal(w.Body.Bytes(), &sensor)
+	var s sensor.Sensor
+	err := json.Unmarshal(w.Body.Bytes(), &s)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, "S1", sensor.ID)
-	assert.Equal(t, "Temperature", sensor.Name)
-	assert.Equal(t, models.DataTypeFloat, sensor.DataType)
-	assert.Equal(t, models.SensorTypeExternal, sensor.Type)
-	assert.Equal(t, 0, sensor.PollingInterval)
+	assert.Equal(t, "S1", s.ID)
+	assert.Equal(t, "Temperature", s.Name)
+	assert.Equal(t, sensor.DataTypeFloat, s.DataType)
+	assert.Equal(t, sensor.SensorTypeExternal, s.Type)
+	assert.Equal(t, 0, s.PollingInterval)
 }

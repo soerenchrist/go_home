@@ -1,4 +1,4 @@
-package controllers
+package command
 
 import (
 	"io"
@@ -6,14 +6,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/device"
+	"github.com/soerenchrist/go_home/internal/errors"
 )
 
 type CommandsDatabase interface {
-	ListCommands(deviceId string) ([]models.Command, error)
-	GetCommand(deviceId string, commandId string) (*models.Command, error)
-	GetDevice(deviceId string) (*models.Device, error)
-	AddCommand(command *models.Command) error
+	ListCommands(deviceId string) ([]Command, error)
+	GetCommand(deviceId string, commandId string) (*Command, error)
+	GetDevice(deviceId string) (*device.Device, error)
+	AddCommand(command *Command) error
 	DeleteCommand(deviceId string, commandId string) error
 }
 
@@ -67,7 +68,7 @@ func (c *CommandsController) PostCommand(context *gin.Context) {
 		return
 	}
 
-	var request models.CreateCommandRequest
+	var request CreateCommandRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(400, gin.H{"error": "Invalid JSON"})
 		return
@@ -78,7 +79,7 @@ func (c *CommandsController) PostCommand(context *gin.Context) {
 		return
 	}
 
-	command := models.Command{
+	command := Command{
 		ID:              uuid.NewString(),
 		Name:            request.Name,
 		DeviceID:        deviceId,
@@ -116,7 +117,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	deviceId := context.Param("deviceId")
 	commandId := context.Param("commandId")
 
-	var params models.CommandParameters
+	var params CommandParameters
 
 	content_length := context.Request.Header["Content-Length"]
 	if content_length != nil && content_length[0] != "0" {
@@ -125,7 +126,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 		}
 	}
 
-	var device *models.Device
+	var device *device.Device
 	var err error
 	if device, err = c.database.GetDevice(deviceId); err != nil {
 		context.JSON(404, gin.H{"error": "Device not found"})
@@ -138,7 +139,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 		return
 	}
 
-	var result models.InvocationResult
+	var result InvocationResult
 	res, err := command.Invoke(device, &params)
 	if err != nil {
 		context.JSON(500, gin.H{"error": err.Error()})
@@ -156,21 +157,21 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	context.JSON(200, result)
 }
 
-func (c *CommandsController) validateCommand(command *models.CreateCommandRequest) error {
+func (c *CommandsController) validateCommand(command *CreateCommandRequest) error {
 	if command.Name == "" {
-		return &models.ValidationError{Message: "Name is required"}
+		return &errors.ValidationError{Message: "Name is required"}
 	}
 
 	if command.Endpoint == "" {
-		return &models.ValidationError{Message: "Endpoint is required"}
+		return &errors.ValidationError{Message: "Endpoint is required"}
 	}
 	if command.PayloadTemplate == "" {
-		return &models.ValidationError{Message: "Payload template is required"}
+		return &errors.ValidationError{Message: "Payload template is required"}
 	}
 
 	methods := []string{"GET", "POST", "PUT", "DELETE"}
 	if !contains(methods, command.Method) {
-		return &models.ValidationError{Message: "Method must be one of GET, POST, PUT or DELETE"}
+		return &errors.ValidationError{Message: "Method must be one of GET, POST, PUT or DELETE"}
 	}
 
 	return nil

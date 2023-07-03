@@ -5,29 +5,31 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	frontend "github.com/soerenchrist/go_home/app"
-	"github.com/soerenchrist/go_home/internal/controllers"
+	frontend "github.com/soerenchrist/go_home/internal/app"
+	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/device"
+	"github.com/soerenchrist/go_home/internal/rules"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
-func NewRouter(database db.Database, outputBindings chan models.SensorValue) *gin.Engine {
+func NewRouter(database db.Database, outputBindings chan value.SensorValue) *gin.Engine {
 	router := gin.Default()
 
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()
 
-	health := new(controllers.HealthController)
-	devicesController := controllers.NewDevicesController(database)
-	sensorsController := controllers.NewSensorsController(database)
-	sensorValuesController := controllers.NewSensorValuesController(database, outputBindings)
-	commandsController := controllers.NewCommandsController(database)
-	rulesController := controllers.NewRulesController(database)
+	devicesController := device.NewDevicesController(database)
+	sensorsController := sensor.NewSensorsController(database)
+	sensorValuesController := value.NewSensorValuesController(database, outputBindings)
+	commandsController := command.NewCommandsController(database)
+	rulesController := rules.NewRulesController(database)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")
 
-	v1.GET("/health", health.Status)
+	v1.GET("/health", health)
 
 	v1.GET("/devices", devicesController.GetDevices)
 	v1.GET("/devices/:deviceId", devicesController.GetDevice)
@@ -67,4 +69,10 @@ func echo(context *gin.Context) {
 	context.Status(200)
 	context.Header("Content-Type", "application/json")
 	context.Writer.Write(body)
+}
+
+func health(context *gin.Context) {
+	context.JSON(200, gin.H{
+		"status": "ok",
+	})
 }

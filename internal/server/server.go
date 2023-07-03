@@ -10,9 +10,9 @@ import (
 	"github.com/soerenchrist/go_home/internal/background"
 	"github.com/soerenchrist/go_home/internal/config"
 	"github.com/soerenchrist/go_home/internal/db"
-	"github.com/soerenchrist/go_home/internal/models"
 	"github.com/soerenchrist/go_home/internal/mqtt"
 	"github.com/soerenchrist/go_home/internal/rules/evaluation"
+	"github.com/soerenchrist/go_home/internal/value"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/driver/sqlite"
@@ -38,7 +38,7 @@ func Init() {
 	if seed {
 		database.SeedDatabase()
 	}
-	outputBindings := make(chan models.SensorValue, 10)
+	outputBindings := make(chan value.SensorValue, 10)
 	// TODO: Refactor outputbindings channel passing around
 	addRulesEngine(database, outputBindings)
 
@@ -50,7 +50,7 @@ func Init() {
 	}
 }
 
-func runHomeServer(config *viper.Viper, database db.Database, outputBindings chan models.SensorValue) {
+func runHomeServer(config *viper.Viper, database db.Database, outputBindings chan value.SensorValue) {
 	r := NewRouter(database, outputBindings)
 
 	port := config.GetString("server.port")
@@ -96,7 +96,7 @@ func runMqttBridge(config *viper.Viper) {
 	})
 }
 
-func addRulesEngine(database db.Database, outputBindings chan models.SensorValue) {
+func addRulesEngine(database db.Database, outputBindings chan value.SensorValue) {
 	rulesEngine := evaluation.NewRulesEngine(database)
 
 	go rulesEngine.ListenForValues(outputBindings)

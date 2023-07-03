@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/value"
 	"github.com/spf13/viper"
 )
 
@@ -73,7 +73,7 @@ func subscribe(client mqtt.Client, config *viper.Viper) {
 		device := parts[1]
 		sensor := parts[2]
 
-		request := models.AddSensorValueRequest{
+		request := value.AddSensorValueRequest{
 			Value: string(msg.Payload()),
 		}
 		body, err := json.Marshal(request)

@@ -6,8 +6,10 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/rules"
+	"github.com/soerenchrist/go_home/internal/sensor"
+	"github.com/soerenchrist/go_home/internal/value"
 )
 
 type SensorValueType string
@@ -36,7 +38,7 @@ func NewRulesEngine(database rules.RulesDatabase) *RulesEngine {
 	return &RulesEngine{lookupTable: lookupTable, database: database}
 }
 
-func (engine *RulesEngine) ListenForValues(sensorsChannel chan models.SensorValue) {
+func (engine *RulesEngine) ListenForValues(sensorsChannel chan value.SensorValue) {
 	log.Println("Listening for sensor values...")
 	for {
 		sensor := <-sensorsChannel
@@ -73,14 +75,14 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		return fmt.Errorf("error reading device: %v", err)
 	}
 
-	command, err := engine.database.GetCommand(action.DeviceId, action.CommandId)
+	cmd, err := engine.database.GetCommand(action.DeviceId, action.CommandId)
 	if err != nil {
 		return fmt.Errorf("error reading command: %v", err)
 	}
 
-	log.Printf("Executing command: %v\n", command)
+	log.Printf("Executing command: %v\n", cmd)
 
-	var params models.CommandParameters
+	var params command.CommandParameters
 	if action.Payload != "" {
 		err := json.Unmarshal([]byte(action.Payload), &params)
 		if err != nil {
@@ -88,7 +90,7 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		}
 	}
 
-	resp, err := command.Invoke(device, &params)
+	resp, err := cmd.Invoke(device, &params)
 	if err != nil {
 		return fmt.Errorf("error invoking command: %v", err)
 	}
@@ -152,22 +154,22 @@ func (engine *RulesEngine) evaluateAst(ast *rules.Node, values map[string]string
 }
 
 func (engine *RulesEngine) evaluateExpression(expression *rules.ConditionExpression, values map[string]string) (bool, error) {
-	sensor, err := engine.database.GetSensor(expression.DeviceId, expression.SensorId)
+	s, err := engine.database.GetSensor(expression.DeviceId, expression.SensorId)
 	if err != nil {
 		return false, err
 	}
 
-	switch sensor.DataType {
-	case models.DataTypeBool:
+	switch s.DataType {
+	case sensor.DataTypeBool:
 		return engine.evaluateBoolExpression(expression, values)
-	case models.DataTypeInt:
+	case sensor.DataTypeInt:
 		return engine.evaluateIntExpression(expression, values)
-	case models.DataTypeFloat:
+	case sensor.DataTypeFloat:
 		return engine.evaluateFloatExpression(expression, values)
-	case models.DataTypeString:
+	case sensor.DataTypeString:
 		return engine.evaluateStringExpression(expression, values)
 	default:
-		return false, fmt.Errorf("unknown data type: %s", sensor.DataType)
+		return false, fmt.Errorf("unknown data type: %s", s.DataType)
 	}
 }
 

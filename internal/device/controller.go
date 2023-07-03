@@ -1,17 +1,16 @@
-package controllers
+package device
 
 import (
 	"fmt"
 
-	"github.com/soerenchrist/go_home/internal/models"
-
 	"github.com/gin-gonic/gin"
+	"github.com/soerenchrist/go_home/internal/errors"
 )
 
 type DevicesDatabase interface {
-	ListDevices() ([]models.Device, error)
-	GetDevice(deviceId string) (*models.Device, error)
-	AddDevice(device *models.Device) error
+	ListDevices() ([]Device, error)
+	GetDevice(deviceId string) (*Device, error)
+	AddDevice(device *Device) error
 	DeleteDevice(deviceId string) error
 }
 
@@ -33,7 +32,7 @@ func (c *DevicesController) GetDevices(context *gin.Context) {
 }
 
 func (c *DevicesController) PostDevice(context *gin.Context) {
-	var request models.CreateDeviceRequest
+	var request CreateDeviceRequest
 	if err := context.BindJSON(&request); err != nil {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
@@ -50,7 +49,7 @@ func (c *DevicesController) PostDevice(context *gin.Context) {
 		return
 	}
 
-	device := models.Device{
+	device := Device{
 		ID:   request.Id,
 		Name: request.Name,
 	}
@@ -79,7 +78,7 @@ func (c *DevicesController) DeleteDevice(context *gin.Context) {
 
 	err := c.database.DeleteDevice(id)
 
-	if notFound, isOk := err.(*models.NotFoundError); isOk {
+	if notFound, isOk := err.(*errors.NotFoundError); isOk {
 		context.JSON(404, gin.H{"error": notFound.Error()})
 		return
 	}
@@ -91,9 +90,9 @@ func (c *DevicesController) DeleteDevice(context *gin.Context) {
 	context.Status(204)
 }
 
-func (c *DevicesController) validateDevice(device models.CreateDeviceRequest) error {
+func (c *DevicesController) validateDevice(device CreateDeviceRequest) error {
 	if len(device.Name) < 3 {
-		return &models.ValidationError{Message: "Name must be at least 3 characters long"}
+		return &errors.ValidationError{Message: "Name must be at least 3 characters long"}
 	}
 
 	return nil

@@ -1,18 +1,17 @@
-package controllers
+package rules
 
 import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/go_home/internal/models"
-	"github.com/soerenchrist/go_home/internal/rules"
+	"github.com/soerenchrist/go_home/internal/errors"
 )
 
 type RulesController struct {
-	database rules.RulesDatabase
+	database RulesDatabase
 }
 
-func NewRulesController(database rules.RulesDatabase) *RulesController {
+func NewRulesController(database RulesDatabase) *RulesController {
 	return &RulesController{database: database}
 }
 
@@ -27,16 +26,16 @@ func (controller *RulesController) ListRules(context *gin.Context) {
 }
 
 func (controller *RulesController) PostRule(context *gin.Context) {
-	var request models.CreateRuleRequest
+	var request CreateRuleRequest
 	if err := context.ShouldBindJSON(&request); err != nil {
 		context.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	rule := rules.Rule{
+	rule := Rule{
 		Name: request.Name,
-		When: rules.WhenExpression(request.When),
-		Then: rules.ThenExpression(request.Then),
+		When: WhenExpression(request.When),
+		Then: ThenExpression(request.Then),
 	}
 
 	if err := controller.validateRule(&rule); err != nil {
@@ -52,20 +51,20 @@ func (controller *RulesController) PostRule(context *gin.Context) {
 	context.JSON(201, rule)
 }
 
-func (controller *RulesController) validateRule(rule *rules.Rule) error {
+func (controller *RulesController) validateRule(rule *Rule) error {
 	if rule.Name == "" {
-		return &models.ValidationError{Message: "Name is required"}
+		return &errors.ValidationError{Message: "Name is required"}
 	}
 
 	_, err := rule.ReadConditionAst()
 	if err != nil {
-		return &models.ValidationError{Message: err.Error()}
+		return &errors.ValidationError{Message: err.Error()}
 	}
 
 	_, err = rule.ReadAction()
 	if err != nil {
 		log.Printf("Error: %v", err)
-		return &models.ValidationError{Message: err.Error()}
+		return &errors.ValidationError{Message: err.Error()}
 	}
 	return nil
 }
