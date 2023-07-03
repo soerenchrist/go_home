@@ -10,9 +10,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/soerenchrist/go_home/db"
-	"github.com/soerenchrist/go_home/models"
-	"github.com/soerenchrist/go_home/server"
+	"github.com/soerenchrist/go_home/internal/db"
+	"github.com/soerenchrist/go_home/internal/models"
+	"github.com/soerenchrist/go_home/internal/server"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

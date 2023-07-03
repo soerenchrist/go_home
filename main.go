@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/soerenchrist/go_home/config"
-	"github.com/soerenchrist/go_home/server"
+	"github.com/soerenchrist/go_home/internal/config"
+	"github.com/soerenchrist/go_home/internal/server"
 )
 
 func main() {

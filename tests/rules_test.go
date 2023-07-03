@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/magiconair/properties/assert"
-	"github.com/soerenchrist/go_home/db"
-	"github.com/soerenchrist/go_home/rules"
+	"github.com/soerenchrist/go_home/internal/db"
+	"github.com/soerenchrist/go_home/internal/rules"
 )
 
 func TestListRules_ShouldReturnRules(t *testing.T) {

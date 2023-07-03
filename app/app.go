@@ -6,7 +6,7 @@ import (
 	"github.com/foolin/goview"
 	"github.com/foolin/goview/supports/ginview"
 	"github.com/gin-gonic/gin"
-	"github.com/soerenchrist/go_home/db"
+	"github.com/soerenchrist/go_home/internal/db"
 )
 
 type App struct {
