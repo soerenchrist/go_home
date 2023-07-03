@@ -1,11 +1,11 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/rules"
+	"gorm.io/gorm"
 )
 
 type Database interface {
@@ -33,15 +33,14 @@ type Database interface {
 	ListRules() ([]rules.Rule, error)
 	AddRule(rule *rules.Rule) error
 
-	Close() error
 	SeedDatabase()
 }
 
 type SqliteDevicesDatabase struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewDevicesDatabase(db *sql.DB) (*SqliteDevicesDatabase, error) {
+func NewDevicesDatabase(db *gorm.DB) (*SqliteDevicesDatabase, error) {
 	database := &SqliteDevicesDatabase{db: db}
 	if err := database.createTables(); err != nil {
 		return nil, err
@@ -50,27 +49,8 @@ func NewDevicesDatabase(db *sql.DB) (*SqliteDevicesDatabase, error) {
 	return database, nil
 }
 
-func (db *SqliteDevicesDatabase) Close() error {
-	return db.db.Close()
-}
-
 func (db *SqliteDevicesDatabase) createTables() error {
-
-	if err := db.createDeviceTable(); err != nil {
-		return err
-	}
-	if err := db.createSensorsTable(); err != nil {
-		return err
-	}
-	if err := db.createSensorValuesTable(); err != nil {
-		return err
-	}
-	if err := db.createCommandsTable(); err != nil {
-		return err
-	}
-	if err := db.createRulesTable(); err != nil {
-		return err
-	}
+	db.db.AutoMigrate(&models.Command{}, &models.Device{}, &models.Sensor{}, &models.SensorValue{}, &rules.Rule{})
 	return nil
 }
 

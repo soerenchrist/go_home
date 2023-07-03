@@ -1,10 +1,16 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Device struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (d *Device) String() string {
@@ -22,6 +28,9 @@ type Sensor struct {
 	PollingInterval int             `json:"polling_interval"`
 	PollingEndpoint string          `json:"polling_endpoint"`
 	PollingStrategy PollingStrategy `json:"polling_strategy"`
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type PollingStrategy string
@@ -47,8 +56,8 @@ const (
 )
 
 type SensorValue struct {
-	SensorID  string `json:"sensor_id"`
-	DeviceID  string `json:"device_id"`
-	Value     string `json:"value"`
-	Timestamp string `json:"timestamp"`
+	SensorID  string    `json:"sensor_id"`
+	DeviceID  string    `json:"device_id"`
+	Value     string    `json:"value"`
+	Timestamp time.Time `json:"timestamp"`
 }

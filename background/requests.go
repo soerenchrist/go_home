@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-ping/ping"
 	"github.com/soerenchrist/go_home/models"
-	"github.com/soerenchrist/go_home/util"
 )
 
 type RequestStrategy interface {
@@ -43,6 +42,6 @@ func (s *PingStrategy) PerformRequest(sensor *models.Sensor) (*models.SensorValu
 		Value:     strconv.FormatBool(reachable),
 		SensorID:  sensor.ID,
 		DeviceID:  sensor.DeviceID,
-		Timestamp: util.GetTimestamp(),
+		Timestamp: time.Now(),
 	}, nil
 }

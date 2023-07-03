@@ -1,14 +1,12 @@
 package server
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/soerenchrist/go_home/background"
 	"github.com/soerenchrist/go_home/config"
 	"github.com/soerenchrist/go_home/db"
@@ -17,6 +15,8 @@ import (
 	"github.com/soerenchrist/go_home/rules/evaluation"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 var (
@@ -134,14 +134,12 @@ func addMqttBridge(config *viper.Viper) (*gin.Engine, error) {
 	return router, nil
 }
 
-func openDatabase(path string) *sql.DB {
-	db, err := sql.Open("sqlite3", path)
+func openDatabase(path string) *gorm.DB {
+	db := sqlite.Open(path)
+	gdb, err := gorm.Open(db, &gorm.Config{})
 	if err != nil {
-		panic(err)
-	}
-	if _, err := db.Exec("PRAGMA foreign_keys = ON"); err != nil {
-		panic(err)
+		panic("failed to open database")
 	}
 
-	return db
+	return gdb
 }

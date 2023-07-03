@@ -97,9 +97,11 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		request.Timestamp = util.GetTimestamp()
 	}
 
+	time, _ := time.Parse(time.RFC3339, request.Timestamp)
+
 	sensorValue := &models.SensorValue{
 		Value:     request.Value,
-		Timestamp: request.Timestamp,
+		Timestamp: time,
 		DeviceID:  device.ID,
 		SensorID:  sensor.ID,
 	}

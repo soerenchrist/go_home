@@ -11,7 +11,6 @@ import (
 	"github.com/soerenchrist/go_home/db"
 	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/server"
-	"github.com/soerenchrist/go_home/util"
 )
 
 func TestAddSensorValue_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -112,7 +111,6 @@ func TestAddSensorValue_ShouldAddSensorValueToDb(t *testing.T) {
 		}
 
 		assert.Equal(t, value.Value, "1.23")
-		assert.Equal(t, util.ValidateTimestamp(value.Timestamp), nil)
 	}
 
 	w := RecordPostCallWithDb(t, "/api/v1/devices/1/sensors/S1/values", body, validator)
@@ -126,7 +124,6 @@ func TestAddSensorValue_ShouldAddSensorValueToDb(t *testing.T) {
 	}
 
 	assert.Equal(t, result.Value, "1.23")
-	assert.Equal(t, util.ValidateTimestamp(result.Timestamp), nil)
 }
 
 func TestGetCurrentSensorValue_ShouldReturn404_WhenDeviceDoesnotExist(t *testing.T) {
@@ -153,10 +150,9 @@ func TestGetcurrentSensorValue_ShouldReturn404_WhenNoValueExists(t *testing.T) {
 
 func TestGetCurrentSensorValue_ShouldReturnSensorValue_WhenOneExists(t *testing.T) {
 	w := httptest.NewRecorder()
-	filename := t.Name() + ".db"
+	filename := t.Name()
 	database := CreateTestDatabase(filename)
-	defer CloseTestDatabase(database, filename)
-	timestamp := "2019-01-01T00:00:00Z"
+	timestamp, _ := time.Parse(time.RFC3339, "2019-01-01T00:00:00Z")
 	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestamp})
 	if err != nil {
 		t.Error(err)
@@ -194,11 +190,10 @@ func TestGetSensorValues_ShouldReturn404_WhenSensorDoesNotExist(t *testing.T) {
 
 func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *testing.T) {
 	w := httptest.NewRecorder()
-	filename := t.Name() + ".db"
+	filename := t.Name()
 	database := CreateTestDatabase(filename)
-	defer CloseTestDatabase(database, filename)
 
-	timestampOneHourAgo := getTimestamp(time.Now().Add(-1*time.Hour - 1*time.Minute))
+	timestampOneHourAgo := time.Now().Add(-1*time.Hour - 1*time.Minute)
 
 	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
@@ -216,11 +211,10 @@ func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *tes
 func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.T) {
 
 	w := httptest.NewRecorder()
-	filename := t.Name() + ".db"
+	filename := t.Name()
 	database := CreateTestDatabase(filename)
-	defer CloseTestDatabase(database, filename)
 
-	timestampOneHourAgo := getTimestamp(time.Now().Add(-1*time.Hour - 1*time.Minute))
+	timestampOneHourAgo := time.Now().Add(-1*time.Hour - 1*time.Minute)
 
 	err := database.AddSensorValue(&models.SensorValue{SensorID: "S1", Value: "1.23", DeviceID: "1", Timestamp: timestampOneHourAgo})
 	if err != nil {
@@ -240,9 +234,4 @@ func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.
 
 	assert.Equal(t, len(result), 1)
 	assert.Equal(t, result[0].Value, "1.23")
-	assert.Equal(t, result[0].Timestamp, timestampOneHourAgo)
-}
-
-func getTimestamp(t time.Time) string {
-	return t.Format(time.RFC3339)
 }

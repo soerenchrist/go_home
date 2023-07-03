@@ -3,11 +3,11 @@ package evaluation_test
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/soerenchrist/go_home/models"
 	"github.com/soerenchrist/go_home/rules"
 	"github.com/soerenchrist/go_home/rules/evaluation"
-	"github.com/soerenchrist/go_home/util"
 )
 
 func TestDetermineUsedSensorValues_ShouldFindCorrectValues(t *testing.T) {
@@ -118,13 +118,13 @@ func (db FakeDatabase) GetCurrentSensorValue(deviceId, sensorId string) (*models
 			SensorID:  "sensor1",
 			DeviceID:  "device1",
 			Value:     "11",
-			Timestamp: util.GetTimestamp(),
+			Timestamp: time.Now(),
 		},
 		"device2.sensor2": {
 			SensorID:  "sensor2",
 			DeviceID:  "device2",
 			Value:     "true",
-			Timestamp: util.GetTimestamp(),
+			Timestamp: time.Now(),
 		},
 	}
 
@@ -142,13 +142,13 @@ func (db FakeDatabase) GetPreviousSensorValue(deviceId, sensorId string) (*model
 			SensorID:  "sensor1",
 			DeviceID:  "device1",
 			Value:     "8",
-			Timestamp: util.GetTimestamp(),
+			Timestamp: time.Now(),
 		},
 		"device2.sensor2": {
 			SensorID:  "sensor2",
 			DeviceID:  "device2",
 			Value:     "false",
-			Timestamp: util.GetTimestamp(),
+			Timestamp: time.Now(),
 		},
 	}
 
