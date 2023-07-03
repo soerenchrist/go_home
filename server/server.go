@@ -125,7 +125,7 @@ func addMqttBridge(config *viper.Viper) (*gin.Engine, error) {
 
 	publishChannel := make(chan mqtt.Message, 10)
 
-	err := mqtt.ConnectToBroker(options, publishChannel)
+	err := mqtt.ConnectToBroker(options, publishChannel, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add MQTT binding: %v", err)
 	}
