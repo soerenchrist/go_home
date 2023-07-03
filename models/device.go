@@ -6,7 +6,7 @@ import (
 )
 
 type Device struct {
-	ID   string `json:"id"`
+	ID   string `json:"id" gorm:"primaryKey"`
 	Name string `json:"name"`
 
 	CreatedAt time.Time
@@ -18,8 +18,8 @@ func (d *Device) String() string {
 }
 
 type Sensor struct {
-	ID              string          `json:"id"`
-	DeviceID        string          `json:"device_id"`
+	ID              string          `json:"id" gorm:"primaryKey"`
+	DeviceID        string          `json:"device_id" gorm:"primaryKey"`
 	Name            string          `json:"name"`
 	DataType        DataType        `json:"data_type"`
 	Unit            string          `json:"unit"`
