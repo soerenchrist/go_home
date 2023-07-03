@@ -20,11 +20,11 @@ func NewRouter(database db.Database, outputBindings chan value.SensorValue) *gin
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()
 
-	devicesController := device.NewDevicesController(database)
-	sensorsController := sensor.NewSensorsController(database)
-	sensorValuesController := value.NewSensorValuesController(database, outputBindings)
-	commandsController := command.NewCommandsController(database)
-	rulesController := rules.NewRulesController(database)
+	devicesController := device.NewController(database)
+	sensorsController := sensor.NewController(database)
+	sensorValuesController := value.NewController(database, outputBindings)
+	commandsController := command.NewController(database)
+	rulesController := rules.NewController(database)
 
 	api := router.Group("/api")
 	v1 := api.Group("/v1")

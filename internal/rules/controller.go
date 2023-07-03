@@ -11,7 +11,7 @@ type RulesController struct {
 	database RulesDatabase
 }
 
-func NewRulesController(database RulesDatabase) *RulesController {
+func NewController(database RulesDatabase) *RulesController {
 	return &RulesController{database: database}
 }
 

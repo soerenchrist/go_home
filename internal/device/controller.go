@@ -18,7 +18,7 @@ type DevicesController struct {
 	database DevicesDatabase
 }
 
-func NewDevicesController(database DevicesDatabase) *DevicesController {
+func NewController(database DevicesDatabase) *DevicesController {
 	return &DevicesController{database: database}
 }
 

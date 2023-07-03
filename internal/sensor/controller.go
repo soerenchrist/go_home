@@ -20,7 +20,7 @@ type SensorsController struct {
 	database SensorsDatabase
 }
 
-func NewSensorsController(database SensorsDatabase) *SensorsController {
+func NewController(database SensorsDatabase) *SensorsController {
 	return &SensorsController{database: database}
 }
 

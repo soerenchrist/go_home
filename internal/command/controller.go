@@ -22,7 +22,7 @@ type CommandsController struct {
 	database CommandsDatabase
 }
 
-func NewCommandsController(database CommandsDatabase) *CommandsController {
+func NewController(database CommandsDatabase) *CommandsController {
 	return &CommandsController{database: database}
 }
 

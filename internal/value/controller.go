@@ -26,7 +26,7 @@ type SensorValuesController struct {
 	outputBindings chan SensorValue
 }
 
-func NewSensorValuesController(database SensorValuesDatabase, outputBindings chan SensorValue) *SensorValuesController {
+func NewController(database SensorValuesDatabase, outputBindings chan SensorValue) *SensorValuesController {
 	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 
