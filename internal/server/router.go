@@ -14,7 +14,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/value"
 )
 
-func NewRouter(database db.Database, outputBindings chan value.SensorValue) *gin.Engine {
+func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.Engine {
 	router := gin.Default()
 
 	app := frontend.NewApp(router, database)

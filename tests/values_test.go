@@ -157,7 +157,7 @@ func TestGetCurrentSensorValue_ShouldReturnSensorValue_WhenOneExists(t *testing.
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan value.SensorValue))
+	router := server.NewRouter(database, value.NewOutputBindings())
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/current", nil)
 	router.ServeHTTP(w, req)
@@ -199,7 +199,7 @@ func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *tes
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan value.SensorValue))
+	router := server.NewRouter(database, value.NewOutputBindings())
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values", nil)
 	router.ServeHTTP(w, req)
@@ -220,7 +220,7 @@ func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, make(chan value.SensorValue))
+	router := server.NewRouter(database, value.NewOutputBindings())
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values?timeframe=2h", nil)
 	router.ServeHTTP(w, req)
 

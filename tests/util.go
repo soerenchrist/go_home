@@ -47,7 +47,7 @@ func recordCall(t *testing.T, url string, method string, body io.Reader, dbValid
 	if dbValidator != nil {
 		defer dbValidator(database)
 	}
-	outputBindings := make(chan value.SensorValue, 10)
+	outputBindings := value.NewOutputBindings()
 	router := server.NewRouter(database, outputBindings)
 
 	req := httptest.NewRequest(method, url, body)

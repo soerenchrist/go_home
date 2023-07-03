@@ -10,7 +10,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/value"
 )
 
-func PollSensorValues(database db.Database, outputBinding chan value.SensorValue) {
+func PollSensorValues(database db.Database, outputBinding *value.OutputBindings) {
 	sensors, err := database.ListPollingSensors()
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func PollSensorValues(database db.Database, outputBinding chan value.SensorValue
 	}
 }
 
-func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding chan value.SensorValue) {
+func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding *value.OutputBindings) {
 	for {
 		sensor := <-channel
 
@@ -56,7 +56,7 @@ func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding
 			log.Printf("Failed to save polling result %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
-		outputBinding <- *result
+		outputBinding.Push(*result)
 		log.Printf("Polled sensor %s successfully with result %s\n", sensor.ID, result.Value)
 	}
 }

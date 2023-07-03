@@ -38,8 +38,7 @@ func Init() {
 	if seed {
 		database.SeedDatabase()
 	}
-	outputBindings := make(chan value.SensorValue, 10)
-	// TODO: Refactor outputbindings channel passing around
+	outputBindings := value.NewOutputBindings()
 	addRulesEngine(database, outputBindings)
 
 	runHomeServer(config, database, outputBindings)
@@ -50,7 +49,7 @@ func Init() {
 	}
 }
 
-func runHomeServer(config *viper.Viper, database db.Database, outputBindings chan value.SensorValue) {
+func runHomeServer(config *viper.Viper, database db.Database, outputBindings *value.OutputBindings) {
 	r := NewRouter(database, outputBindings)
 
 	port := config.GetString("server.port")
@@ -96,10 +95,13 @@ func runMqttBridge(config *viper.Viper) {
 	})
 }
 
-func addRulesEngine(database db.Database, outputBindings chan value.SensorValue) {
+func addRulesEngine(database db.Database, outputBindings *value.OutputBindings) {
 	rulesEngine := evaluation.NewRulesEngine(database)
 
-	go rulesEngine.ListenForValues(outputBindings)
+	sensorsChan := make(chan value.SensorValue)
+	outputBindings.Register(sensorsChan)
+
+	go rulesEngine.ListenForValues(sensorsChan)
 	go background.PollSensorValues(database, outputBindings)
 }
 

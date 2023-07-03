@@ -23,10 +23,10 @@ type SensorValuesDatabase interface {
 
 type SensorValuesController struct {
 	database       SensorValuesDatabase
-	outputBindings chan SensorValue
+	outputBindings *OutputBindings
 }
 
-func NewController(database SensorValuesDatabase, outputBindings chan SensorValue) *SensorValuesController {
+func NewController(database SensorValuesDatabase, outputBindings *OutputBindings) *SensorValuesController {
 	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 
@@ -114,7 +114,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		return
 	}
 
-	c.outputBindings <- *sensorValue
+	c.outputBindings.Push(*sensorValue)
 	context.JSON(201, sensorValue)
 }
 
