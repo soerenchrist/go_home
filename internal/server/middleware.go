@@ -4,19 +4,35 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func DefaultStructuredLogger() gin.HandlerFunc {
-	return StructuredLogger(&log.Logger)
+	return StructuredLogger()
 }
 
-func StructuredLogger(logger *zerolog.Logger) gin.HandlerFunc {
+const (
+	correlationHeader = "X-Correlation-ID"
+)
+
+func StructuredLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		raw := c.Request.URL.RawQuery
+
+		u := c.Request.Header.Get(correlationHeader)
+		if u == "" {
+			u = uuid.NewString()
+			c.Header(correlationHeader, u)
+		}
+
+		logger := log.With().Str("correlation_id", u).Logger()
+
+		c.Set("log", logger)
+		c.Set("correlation_id", u)
 
 		c.Next()
 
