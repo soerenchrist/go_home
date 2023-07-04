@@ -12,9 +12,10 @@ import (
 	"github.com/soerenchrist/go_home/internal/rules"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 )
 
-func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.Engine {
+func NewRouter(database db.Database, outputBindings *output.OutputBindingsManager) *gin.Engine {
 	router := gin.New()
 	router.Use(DefaultStructuredLogger())
 	router.Use(gin.Recovery())

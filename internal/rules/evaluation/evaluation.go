@@ -9,7 +9,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/rules"
 	"github.com/soerenchrist/go_home/internal/sensor"
-	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 )
 
 type SensorValueType string
@@ -38,10 +38,10 @@ func NewRulesEngine(database rules.RulesDatabase) *RulesEngine {
 	return &RulesEngine{lookupTable: lookupTable, database: database}
 }
 
-func (engine *RulesEngine) ListenForValues(sensorsChannel chan value.SensorValue) {
+func (engine *RulesEngine) ListenForValues(rulesOutput *output.ChannelOutputBinding) {
 	log.Debug().Msg("Listening for sensor values...")
 	for {
-		sensor := <-sensorsChannel
+		sensor := <-rulesOutput.Channel
 
 		key := sensor.DeviceID + "." + sensor.SensorID
 		if rules, ok := engine.lookupTable[key]; ok {

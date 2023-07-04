@@ -7,10 +7,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/db"
 	"github.com/soerenchrist/go_home/internal/sensor"
-	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 )
 
-func PollSensorValues(database db.Database, outputBinding *value.OutputBindings) {
+func PollSensorValues(database db.Database, bindingManager *output.OutputBindingsManager) {
 	sensors, err := database.ListPollingSensors()
 	if err != nil {
 		panic(err)
@@ -19,7 +19,7 @@ func PollSensorValues(database db.Database, outputBinding *value.OutputBindings)
 	lastPolls := createPollingMap(sensors)
 	channel := make(chan sensor.Sensor, 10)
 
-	go readChannel(database, channel, outputBinding)
+	go readChannel(database, channel, bindingManager)
 
 	log.Debug().Int("count", len(sensors)).Msgf("Found %d sensors to poll\n", len(sensors))
 
@@ -37,7 +37,7 @@ func PollSensorValues(database db.Database, outputBinding *value.OutputBindings)
 	}
 }
 
-func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding *value.OutputBindings) {
+func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding *output.OutputBindingsManager) {
 	for {
 		sensor := <-channel
 
@@ -56,7 +56,7 @@ func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding
 			log.Error().Err(err).Str("sensor_id", sensor.ID).Msg("Failed to save polling result")
 			continue
 		}
-		outputBinding.Push(*result)
+		outputBinding.Push(result.ToBindingValue())
 		log.Debug().
 			Str("sensor_id", sensor.ID).
 			Str("polling_result", result.Value).

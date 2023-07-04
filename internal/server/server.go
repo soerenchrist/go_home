@@ -13,7 +13,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/db"
 	"github.com/soerenchrist/go_home/internal/mqtt"
 	"github.com/soerenchrist/go_home/internal/rules/evaluation"
-	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/driver/sqlite"
@@ -40,7 +40,7 @@ func Init() {
 	if seed {
 		database.SeedDatabase()
 	}
-	outputBindings := value.NewOutputBindings()
+	outputBindings := output.NewManager()
 	go background.CleanupExpiredSensorValues(sqlite)
 	addRulesEngine(database, outputBindings)
 
@@ -53,7 +53,6 @@ func Init() {
 }
 
 func setupLogging(config *viper.Viper) {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	loglevel := config.GetString("logging.level")
 	switch loglevel {
 	case "error":
@@ -67,7 +66,7 @@ func setupLogging(config *viper.Viper) {
 	}
 }
 
-func runHomeServer(config *viper.Viper, database db.Database, outputBindings *value.OutputBindings) {
+func runHomeServer(config *viper.Viper, database db.Database, outputBindings *output.OutputBindingsManager) {
 	r := NewRouter(database, outputBindings)
 
 	port := config.GetString("server.port")
@@ -113,13 +112,13 @@ func runMqttBridge(config *viper.Viper) {
 	})
 }
 
-func addRulesEngine(database db.Database, outputBindings *value.OutputBindings) {
+func addRulesEngine(database db.Database, outputBindings *output.OutputBindingsManager) {
 	rulesEngine := evaluation.NewRulesEngine(database)
 
-	sensorsChan := make(chan value.SensorValue)
-	outputBindings.Register(sensorsChan)
+	rulesOutput := output.NewChannelOutput()
+	outputBindings.Register(rulesOutput)
 
-	go rulesEngine.ListenForValues(sensorsChan)
+	go rulesEngine.ListenForValues(rulesOutput)
 	go background.PollSensorValues(database, outputBindings)
 }
 

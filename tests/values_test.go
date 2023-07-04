@@ -11,6 +11,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/db"
 	"github.com/soerenchrist/go_home/internal/server"
 	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 )
 
 func TestAddSensorValue_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {
@@ -157,7 +158,7 @@ func TestGetCurrentSensorValue_ShouldReturnSensorValue_WhenOneExists(t *testing.
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, value.NewOutputBindings())
+	router := server.NewRouter(database, output.NewManager())
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/current", nil)
 	router.ServeHTTP(w, req)
@@ -199,7 +200,7 @@ func TestGetSensorValues_ShouldReturnEmptyList_WhenLastValuesIsTooLongAgo(t *tes
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, value.NewOutputBindings())
+	router := server.NewRouter(database, output.NewManager())
 
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values", nil)
 	router.ServeHTTP(w, req)
@@ -220,7 +221,7 @@ func TestGetSensorValues_ShouldReturnValues_WhenValuesAreInTimeFrame(t *testing.
 	if err != nil {
 		t.Error(err)
 	}
-	router := server.NewRouter(database, value.NewOutputBindings())
+	router := server.NewRouter(database, output.NewManager())
 	req := httptest.NewRequest("GET", "/api/v1/devices/1/sensors/S1/values?timeframe=2h", nil)
 	router.ServeHTTP(w, req)
 

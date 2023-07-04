@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/soerenchrist/go_home/internal/db"
 	"github.com/soerenchrist/go_home/internal/server"
-	"github.com/soerenchrist/go_home/internal/value"
+	"github.com/soerenchrist/go_home/pkg/output"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -47,7 +47,7 @@ func recordCall(t *testing.T, url string, method string, body io.Reader, dbValid
 	if dbValidator != nil {
 		defer dbValidator(database)
 	}
-	outputBindings := value.NewOutputBindings()
+	outputBindings := output.NewManager()
 	router := server.NewRouter(database, outputBindings)
 
 	req := httptest.NewRequest(method, url, body)

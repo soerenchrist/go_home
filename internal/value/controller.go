@@ -11,6 +11,7 @@ import (
 	"github.com/soerenchrist/go_home/internal/errors"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/util"
+	"github.com/soerenchrist/go_home/pkg/output"
 )
 
 type SensorValuesDatabase interface {
@@ -23,10 +24,10 @@ type SensorValuesDatabase interface {
 
 type SensorValuesController struct {
 	database       SensorValuesDatabase
-	outputBindings *OutputBindings
+	outputBindings *output.OutputBindingsManager
 }
 
-func NewController(database SensorValuesDatabase, outputBindings *OutputBindings) *SensorValuesController {
+func NewController(database SensorValuesDatabase, outputBindings *output.OutputBindingsManager) *SensorValuesController {
 	return &SensorValuesController{database: database, outputBindings: outputBindings}
 }
 
@@ -121,7 +122,7 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		return
 	}
 
-	c.outputBindings.Push(*sensorValue)
+	c.outputBindings.Push(sensorValue.ToBindingValue())
 	context.JSON(201, sensorValue)
 }
 
