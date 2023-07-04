@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/util"
@@ -21,6 +22,9 @@ type Command struct {
 	PayloadTemplate string `json:"payload"`
 	Endpoint        string `json:"endpoint"`
 	Method          string `json:"method"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (c *Command) String() string {

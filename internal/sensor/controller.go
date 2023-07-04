@@ -71,17 +71,22 @@ func (c *SensorsController) PostSensor(context *gin.Context) {
 		request.PollingStrategy = PollingStrategyPing
 	}
 
+	if request.RetainmentPeriodSeconds == 0 {
+		request.RetainmentPeriodSeconds = -1
+	}
+
 	sensor := &Sensor{
-		ID:              request.Id,
-		Name:            request.Name,
-		DeviceID:        deviceId,
-		DataType:        DataType(request.DataType),
-		Unit:            request.Unit,
-		Type:            request.Type,
-		PollingInterval: request.PollingInterval,
-		PollingEndpoint: request.PollingEndpoint,
-		PollingStrategy: request.PollingStrategy,
-		IsActive:        true,
+		ID:                      request.Id,
+		Name:                    request.Name,
+		DeviceID:                deviceId,
+		DataType:                DataType(request.DataType),
+		Unit:                    request.Unit,
+		Type:                    request.Type,
+		PollingInterval:         request.PollingInterval,
+		PollingEndpoint:         request.PollingEndpoint,
+		PollingStrategy:         request.PollingStrategy,
+		RetainmentPeriodSeconds: request.RetainmentPeriodSeconds,
+		IsActive:                true,
 	}
 
 	err := c.database.AddSensor(sensor)

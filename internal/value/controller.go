@@ -1,6 +1,7 @@
 package value
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"strconv"
@@ -99,13 +100,21 @@ func (c *SensorValuesController) PostSensorValue(context *gin.Context) {
 		request.Timestamp = util.GetTimestamp()
 	}
 
-	time, _ := time.Parse(time.RFC3339, request.Timestamp)
+	timestamp, _ := time.Parse(time.RFC3339, request.Timestamp)
+	var expiry sql.NullTime
 
+	if sensor.RetainmentPeriodSeconds > 0 {
+		expiry = sql.NullTime{
+			Time:  timestamp.Add(time.Duration(sensor.RetainmentPeriodSeconds) * time.Second),
+			Valid: true,
+		}
+	}
 	sensorValue := &SensorValue{
 		Value:     request.Value,
-		Timestamp: time,
+		Timestamp: timestamp,
 		DeviceID:  device.ID,
 		SensorID:  sensor.ID,
+		ExpiresAt: expiry,
 	}
 
 	err = c.database.AddSensorValue(sensorValue)

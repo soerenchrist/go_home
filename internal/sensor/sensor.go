@@ -14,8 +14,10 @@ type Sensor struct {
 	PollingEndpoint string          `json:"polling_endpoint"`
 	PollingStrategy PollingStrategy `json:"polling_strategy"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	RetainmentPeriodSeconds int `json:"retainment_period_seconds"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type PollingStrategy string
@@ -41,12 +43,13 @@ const (
 )
 
 type CreateSensorRequest struct {
-	Id              string          `json:"id"`
-	Name            string          `json:"name"`
-	DataType        DataType        `json:"data_type"`
-	Unit            string          `json:"unit"`
-	Type            SensorType      `json:"type"`
-	PollingInterval int             `json:"polling_interval"`
-	PollingEndpoint string          `json:"polling_endpoint"`
-	PollingStrategy PollingStrategy `json:"polling_strategy"`
+	Id                      string          `json:"id"`
+	Name                    string          `json:"name"`
+	DataType                DataType        `json:"data_type"`
+	Unit                    string          `json:"unit"`
+	Type                    SensorType      `json:"type"`
+	PollingInterval         int             `json:"polling_interval"`
+	PollingEndpoint         string          `json:"polling_endpoint"`
+	PollingStrategy         PollingStrategy `json:"polling_strategy"`
+	RetainmentPeriodSeconds int             `json:"retainment_period_seconds"`
 }

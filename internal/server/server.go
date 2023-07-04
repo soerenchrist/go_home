@@ -39,6 +39,7 @@ func Init() {
 		database.SeedDatabase()
 	}
 	outputBindings := value.NewOutputBindings()
+	go background.CleanupExpiredSensorValues(sqlite)
 	addRulesEngine(database, outputBindings)
 
 	runHomeServer(config, database, outputBindings)

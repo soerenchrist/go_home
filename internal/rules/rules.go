@@ -3,6 +3,7 @@ package rules
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/device"
@@ -24,13 +25,16 @@ type RulesDatabase interface {
 }
 
 type Rule struct {
-	Id   int64
-	Name string
-	When WhenExpression
-	Then ThenExpression
+	Id   int64          `json:"id"`
+	Name string         `json:"name"`
+	When WhenExpression `json:"when"`
+	Then ThenExpression `json:"then"`
 
 	conditionAst     *Node
 	actionExpression *ActionExpression
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Operator string

@@ -139,7 +139,8 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 		"type": "polling",
 		"polling_interval": 10,
 		"polling_strategy": "ping",
-		"polling_endpoint": "http://"
+		"polling_endpoint": "http://",
+		"retainment_period_seconds": 3600
 	}`
 
 	validator := func(database db.Database) {
@@ -156,6 +157,7 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 		assert.Equal(t, 10, sensors[2].PollingInterval)
 		assert.Equal(t, sensor.PollingStrategyPing, sensors[2].PollingStrategy)
 		assert.Equal(t, "http://", sensors[2].PollingEndpoint)
+		assert.Equal(t, 3600, sensors[2].RetainmentPeriodSeconds)
 	}
 
 	w := RecordPostCallWithDb(t, "/api/v1/devices/1/sensors", body, validator)
@@ -175,6 +177,29 @@ func TestCreateSensor_ShouldAddSensorToDb_WhenBodyIsValid(t *testing.T) {
 	assert.Equal(t, 10, s.PollingInterval)
 	assert.Equal(t, sensor.PollingStrategyPing, s.PollingStrategy)
 	assert.Equal(t, "http://", s.PollingEndpoint)
+	assert.Equal(t, 3600, s.RetainmentPeriodSeconds)
+}
+
+func TestCreateSensor_ShouldSetRetainmentPeriodToMinusOne_WhenItIsNotContainedInBody(t *testing.T) {
+	body := `{
+		"id": "my_sensor",
+		"name": "Test Sensor",
+		"data_type": "float",
+		"type": "polling",
+		"polling_interval": 10,
+		"polling_strategy": "ping",
+		"polling_endpoint": "http://"
+	}`
+
+	w := RecordPostCall(t, "/api/v1/devices/1/sensors", body)
+
+	var s sensor.Sensor
+	err := json.Unmarshal(w.Body.Bytes(), &s)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, s.RetainmentPeriodSeconds, -1)
 }
 
 func TestDeleteSensor_ShouldReturn404_WhenDeviceDoesNotExist(t *testing.T) {

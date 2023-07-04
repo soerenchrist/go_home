@@ -59,8 +59,8 @@ func (db *SqliteDevicesDatabase) createTables() error {
 
 func (database *SqliteDevicesDatabase) SeedDatabase() {
 	device1 := &device.Device{ID: "1", Name: "My Device 1"}
-	sensor1 := &sensor.Sensor{ID: "S1", Name: "Temperature", DeviceID: "1", DataType: sensor.DataTypeFloat, Type: sensor.SensorTypeExternal, IsActive: true, Unit: "Celsius", PollingInterval: 0}
-	sensor2 := &sensor.Sensor{ID: "S2", Name: "Availability", DeviceID: "1", DataType: sensor.DataTypeBool, Type: sensor.SensorTypePolling, IsActive: true, Unit: "", PollingInterval: 10, PollingEndpoint: "localhost", PollingStrategy: "ping"}
+	sensor1 := &sensor.Sensor{ID: "S1", Name: "Temperature", DeviceID: "1", DataType: sensor.DataTypeFloat, Type: sensor.SensorTypeExternal, IsActive: true, Unit: "Celsius", PollingInterval: 0, RetainmentPeriodSeconds: 3600}
+	sensor2 := &sensor.Sensor{ID: "S2", Name: "Availability", DeviceID: "1", DataType: sensor.DataTypeBool, Type: sensor.SensorTypePolling, IsActive: true, Unit: "", PollingInterval: 120, PollingEndpoint: "localhost", PollingStrategy: "ping"}
 	template := `{"device": "{{.device_id}}", "command": "{{.command_id}}", "payload": "{{.p_payload}}"}`
 	command1 := &command.Command{ID: "C1", Name: "Turn on", DeviceID: "1", PayloadTemplate: template, Endpoint: "http://localhost:8080/echo", Method: "POST"}
 
