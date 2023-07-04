@@ -2,7 +2,6 @@ package command
 
 import (
 	"io"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -122,7 +121,7 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	content_length := context.Request.Header["Content-Length"]
 	if content_length != nil && content_length[0] != "0" {
 		if err := context.BindJSON(&params); err != nil {
-			log.Println("Failed to bind JSON", err)
+			log.Errorf("Failed to bind JSON", err)
 		}
 	}
 

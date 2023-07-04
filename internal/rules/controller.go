@@ -1,8 +1,6 @@
 package rules
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/soerenchrist/go_home/internal/errors"
 )
@@ -63,7 +61,7 @@ func (controller *RulesController) validateRule(rule *Rule) error {
 
 	_, err = rule.ReadAction()
 	if err != nil {
-		log.Printf("Error: %v", err)
+		log.Errorf("Error: %v", err)
 		return &errors.ValidationError{Message: err.Error()}
 	}
 	return nil

@@ -2,7 +2,6 @@ package server
 
 import (
 	"io"
-	"log"
 
 	"github.com/gin-gonic/gin"
 	frontend "github.com/soerenchrist/go_home/internal/app"
@@ -15,8 +14,8 @@ import (
 )
 
 func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.Engine {
+	gin.DefaultWriter = io.Discard
 	router := gin.Default()
-
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()
 
@@ -61,7 +60,7 @@ func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.
 func echo(context *gin.Context) {
 	body, err := io.ReadAll(context.Request.Body)
 	if err != nil {
-		log.Printf("Error reading body: %s", err.Error())
+		log.Errorf("Error reading body: %s", err.Error())
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

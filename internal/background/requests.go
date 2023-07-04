@@ -2,7 +2,6 @@ package background
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -35,7 +34,7 @@ func (strgy *PingStrategy) PerformRequest(s *sensor.Sensor) (*value.SensorValue,
 	}
 
 	stats := pinger.Statistics()
-	log.Printf("Ping %s: %v\n", s.PollingEndpoint, stats)
+	log.Debugf("Ping %s: %v\n", s.PollingEndpoint, stats)
 
 	reachable := stats.PacketsRecv > 0
 

@@ -1,8 +1,10 @@
 package value
 
 import (
-	"log"
+	"github.com/op/go-logging"
 )
+
+var log = logging.MustGetLogger("bindings")
 
 type OutputBindings struct {
 	channels []chan SensorValue
@@ -29,8 +31,8 @@ func (bindings *OutputBindings) Push(val SensorValue) {
 func (bindings *OutputBindings) send(channel chan SensorValue, val SensorValue) {
 	select {
 	case channel <- val:
-		log.Println("Sent value to output binding")
+		log.Debug("Sent value to output binding")
 	default:
-		log.Println("Could not sent to output binding")
+		log.Debug("Could not sent to output binding")
 	}
 }

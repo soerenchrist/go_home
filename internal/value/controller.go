@@ -3,7 +3,6 @@ package value
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -69,7 +68,6 @@ func (c *SensorValuesController) GetCurrentSensorValue(context *gin.Context) {
 
 	sensorValue, err := c.database.GetCurrentSensorValue(device.ID, sensor.ID)
 	if err != nil {
-		log.Println(err)
 		context.JSON(404, gin.H{"error": "No sensor value found"})
 		return
 	}

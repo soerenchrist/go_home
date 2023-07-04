@@ -1,8 +1,6 @@
 package db
 
 import (
-	"log"
-
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/errors"
 )
@@ -10,8 +8,6 @@ import (
 func (db *SqliteDevicesDatabase) GetCommand(deviceId, commandId string) (*command.Command, error) {
 	command := command.Command{}
 	result := db.db.Where("id = ? and device_id = ?", commandId, deviceId).First(&command)
-	log.Println(result.Error)
-
 	return &command, result.Error
 }
 

@@ -3,14 +3,16 @@ package evaluation
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"strconv"
 
+	"github.com/op/go-logging"
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/rules"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/value"
 )
+
+var log = logging.MustGetLogger("evaluation")
 
 type SensorValueType string
 
@@ -39,24 +41,24 @@ func NewRulesEngine(database rules.RulesDatabase) *RulesEngine {
 }
 
 func (engine *RulesEngine) ListenForValues(sensorsChannel chan value.SensorValue) {
-	log.Println("Listening for sensor values...")
+	log.Debug("Listening for sensor values...")
 	for {
 		sensor := <-sensorsChannel
 
 		key := sensor.DeviceID + "." + sensor.SensorID
 		if rules, ok := engine.lookupTable[key]; ok {
 			for _, rule := range rules {
-				log.Printf("Evaluating rule %v\n", rule)
+				log.Debug("Evaluating rule %v\n", rule)
 				evalResult, err := engine.EvaluateRule(&rule)
 				if err != nil {
-					log.Printf("Error evaluating rule: %v\n", err)
+					log.Errorf("Error evaluating rule: %v\n", err)
 					continue
 				}
-				log.Printf("Rule '%s' evaluated to %v\n", rule.Name, evalResult)
+				log.Debugf("Rule '%s' evaluated to %v\n", rule.Name, evalResult)
 				if evalResult {
 					err := engine.executeRule(rule)
 					if err != nil {
-						log.Printf("Error executing rule: %v\n", err)
+						log.Errorf("Error executing rule: %v\n", err)
 					}
 				}
 			}
@@ -80,7 +82,7 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		return fmt.Errorf("error reading command: %v", err)
 	}
 
-	log.Printf("Executing command: %v\n", cmd)
+	log.Debugf("Executing command: %v\n", cmd)
 
 	var params command.CommandParameters
 	if action.Payload != "" {
@@ -95,7 +97,7 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		return fmt.Errorf("error invoking command: %v", err)
 	}
 
-	log.Printf("Command response status: %d \n", resp.StatusCode)
+	log.Debugf("Command response status: %d \n", resp.StatusCode)
 	return nil
 }
 
@@ -111,7 +113,7 @@ func (engine *RulesEngine) EvaluateRule(rule *rules.Rule) (bool, error) {
 	}
 
 	for key, value := range values {
-		log.Printf("Sensor value: %s = %v\n", key, value)
+		log.Debugf("Sensor value: %s = %v\n", key, value)
 	}
 
 	ast, err := rule.ReadConditionAst()

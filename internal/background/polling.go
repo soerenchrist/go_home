@@ -2,7 +2,6 @@ package background
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/soerenchrist/go_home/internal/db"
@@ -21,7 +20,7 @@ func PollSensorValues(database db.Database, outputBinding *value.OutputBindings)
 
 	go readChannel(database, channel, outputBinding)
 
-	log.Printf("Found %d sensors to poll\n", len(sensors))
+	log.Debugf("Found %d sensors to poll\n", len(sensors))
 
 	for {
 		currentTimestamp := time.Now().Unix()
@@ -43,21 +42,21 @@ func readChannel(database db.Database, channel chan sensor.Sensor, outputBinding
 
 		strategy, err := getStrategy(&sensor)
 		if err != nil {
-			log.Printf("Error polling sensor %s: %s\n", sensor.ID, err.Error())
+			log.Errorf("Error polling sensor %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
 		result, err := strategy.PerformRequest(&sensor)
 		if err != nil {
-			log.Printf("Error polling sensor %s: %s\n", sensor.ID, err.Error())
+			log.Errorf("Error polling sensor %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
 		err = database.AddSensorValue(result)
 		if err != nil {
-			log.Printf("Failed to save polling result %s: %s\n", sensor.ID, err.Error())
+			log.Errorf("Failed to save polling result %s: %s\n", sensor.ID, err.Error())
 			continue
 		}
 		outputBinding.Push(*result)
-		log.Printf("Polled sensor %s successfully with result %s\n", sensor.ID, result.Value)
+		log.Debugf("Polled sensor %s successfully with result %s\n", sensor.ID, result.Value)
 	}
 }
 
