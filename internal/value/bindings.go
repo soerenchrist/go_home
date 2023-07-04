@@ -1,10 +1,6 @@
 package value
 
-import (
-	"github.com/op/go-logging"
-)
-
-var log = logging.MustGetLogger("bindings")
+import "github.com/rs/zerolog/log"
 
 type OutputBindings struct {
 	channels []chan SensorValue
@@ -31,8 +27,16 @@ func (bindings *OutputBindings) Push(val SensorValue) {
 func (bindings *OutputBindings) send(channel chan SensorValue, val SensorValue) {
 	select {
 	case channel <- val:
-		log.Debug("Sent value to output binding")
+		log.Debug().
+			Str("value", val.Value).
+			Str("sensor_id", val.SensorID).
+			Str("device_id", val.DeviceID).
+			Msg("Sent value to output binding")
 	default:
-		log.Debug("Could not sent to output binding")
+		log.Debug().
+			Str("value", val.Value).
+			Str("sensor_id", val.SensorID).
+			Str("device_id", val.DeviceID).
+			Msg("Could not sent to output binding")
 	}
 }

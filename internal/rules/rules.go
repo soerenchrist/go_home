@@ -5,14 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/op/go-logging"
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/value"
 )
-
-var log = logging.MustGetLogger("rules")
 
 type WhenExpression string
 type ThenExpression string

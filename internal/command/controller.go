@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/errors"
 )
@@ -121,7 +122,11 @@ func (c *CommandsController) InvokeCommand(context *gin.Context) {
 	content_length := context.Request.Header["Content-Length"]
 	if content_length != nil && content_length[0] != "0" {
 		if err := context.BindJSON(&params); err != nil {
-			log.Errorf("Failed to bind JSON", err)
+			log.Error().
+				Str("device_id", deviceId).
+				Str("command_id", commandId).
+				Err(err).
+				Msg("Failed to bind JSON")
 		}
 	}
 

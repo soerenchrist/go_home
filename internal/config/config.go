@@ -1,11 +1,9 @@
 package config
 
 import (
-	"github.com/op/go-logging"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
-
-var log = logging.MustGetLogger("config")
 
 var config *viper.Viper
 
@@ -20,13 +18,13 @@ func Init(env string) {
 	err = config.ReadInConfig()
 
 	if err != nil {
-		log.Fatal("Error reading config file: ", err)
+		log.Fatal().Err(err).Msg("Error reading config file")
 	}
 
 	config.SetConfigName("secrets")
 	err = config.MergeInConfig()
 	if err != nil {
-		log.Warning("No secrets file found. Proceeding...")
+		log.Warn().Msg("No secrets file found. Proceeding...")
 	}
 }
 

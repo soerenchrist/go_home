@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/op/go-logging"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/rules"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/value"
 )
-
-var log = logging.MustGetLogger("evaluation")
 
 type SensorValueType string
 
@@ -41,24 +39,24 @@ func NewRulesEngine(database rules.RulesDatabase) *RulesEngine {
 }
 
 func (engine *RulesEngine) ListenForValues(sensorsChannel chan value.SensorValue) {
-	log.Debug("Listening for sensor values...")
+	log.Debug().Msg("Listening for sensor values...")
 	for {
 		sensor := <-sensorsChannel
 
 		key := sensor.DeviceID + "." + sensor.SensorID
 		if rules, ok := engine.lookupTable[key]; ok {
 			for _, rule := range rules {
-				log.Debug("Evaluating rule %v\n", rule)
+				log.Debug().Int64("rule_id", rule.Id).Str("rule_name", rule.Name).Msg("Evaluating rule")
 				evalResult, err := engine.EvaluateRule(&rule)
 				if err != nil {
-					log.Errorf("Error evaluating rule: %v\n", err)
+					log.Error().Err(err).Msg("Error evaluating rule")
 					continue
 				}
-				log.Debugf("Rule '%s' evaluated to %v\n", rule.Name, evalResult)
+				log.Debug().Str("rule_name", rule.Name).Bool("eval_result", evalResult).Msgf("Rule '%s' evaluated to %t", rule.Name, evalResult)
 				if evalResult {
 					err := engine.executeRule(rule)
 					if err != nil {
-						log.Errorf("Error executing rule: %v\n", err)
+						log.Error().Err(err).Msg("Error executing rule")
 					}
 				}
 			}
@@ -82,7 +80,7 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		return fmt.Errorf("error reading command: %v", err)
 	}
 
-	log.Debugf("Executing command: %v\n", cmd)
+	log.Debug().Str("command_id", cmd.ID).Str("device_id", cmd.DeviceID).Msg("Executing command")
 
 	var params command.CommandParameters
 	if action.Payload != "" {
@@ -97,7 +95,7 @@ func (engine *RulesEngine) executeRule(rule rules.Rule) error {
 		return fmt.Errorf("error invoking command: %v", err)
 	}
 
-	log.Debugf("Command response status: %d \n", resp.StatusCode)
+	log.Debug().Int("response_status", resp.StatusCode).Msgf("Command response status: %d \n", resp.StatusCode)
 	return nil
 }
 
@@ -113,7 +111,7 @@ func (engine *RulesEngine) EvaluateRule(rule *rules.Rule) (bool, error) {
 	}
 
 	for key, value := range values {
-		log.Debugf("Sensor value: %s = %v\n", key, value)
+		log.Debug().Str("sensor_name", key).Str("sensor_value", value).Msgf("Sensor value: %s = %v\n", key, value)
 	}
 
 	ast, err := rule.ReadConditionAst()

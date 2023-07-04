@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	frontend "github.com/soerenchrist/go_home/internal/app"
 	"github.com/soerenchrist/go_home/internal/command"
 	"github.com/soerenchrist/go_home/internal/db"
@@ -13,17 +14,11 @@ import (
 	"github.com/soerenchrist/go_home/internal/value"
 )
 
-type loggingWriter struct {
-}
-
-func (w loggingWriter) Write(data []byte) (int, error) {
-	log.Debug(string(data))
-	return len(data), nil
-}
-
 func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.Engine {
-	gin.DefaultWriter = loggingWriter{}
-	router := gin.Default()
+	router := gin.New()
+	router.Use(DefaultStructuredLogger())
+	router.Use(gin.Recovery())
+
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()
 
@@ -68,7 +63,7 @@ func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.
 func echo(context *gin.Context) {
 	body, err := io.ReadAll(context.Request.Body)
 	if err != nil {
-		log.Errorf("Error reading body: %s", err.Error())
+		log.Error().Msgf("Error reading body: %s", err.Error())
 		context.JSON(500, gin.H{"error": err.Error()})
 		return
 	}

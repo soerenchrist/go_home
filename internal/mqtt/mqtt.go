@@ -7,12 +7,10 @@ import (
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/op/go-logging"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/value"
 	"github.com/spf13/viper"
 )
-
-var log = logging.MustGetLogger("mqtt")
 
 type MqttController struct {
 	publishChannel PublishChannel
@@ -27,20 +25,27 @@ type MqttConfig struct {
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	log.Debugf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	log.Debug().
+		Str("message", string(msg.Payload())).
+		Str("topic", msg.Topic()).
+		Msgf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	log.Debugf("Connected")
+	log.Debug().Msg("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Debugf("Connect lost: %v", err)
+	log.Debug().Err(err).Msg("Connect lost")
 }
 
 type Message struct {
 	Topic   string
 	Payload string
+}
+
+func (msg Message) String() string {
+	return fmt.Sprintf("%s: %s", msg.Topic, msg.Payload)
 }
 
 type PublishChannel chan Message
@@ -56,11 +61,11 @@ func ConnectToBroker(mqttConf MqttConfig, publish PublishChannel, config *viper.
 	options.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(options)
 
-	log.Infof("Connecting to MQTT broker at %s:%d", mqttConf.Host, mqttConf.Port)
+	log.Info().Str("mqtt_host", mqttConf.Host).Int("mqtt_port", mqttConf.Port).Msgf("Connecting to MQTT broker at %s:%d", mqttConf.Host, mqttConf.Port)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	log.Info("Connected to MQTT broker... Listening for publishes")
+	log.Info().Msg("Connected to MQTT broker... Listening for publishes")
 
 	go listenForPublishes(client, publish)
 	subscribe(client, config)
@@ -80,7 +85,7 @@ func subscribe(client mqtt.Client, config *viper.Viper) {
 		}
 		body, err := json.Marshal(request)
 		if err != nil {
-			log.Errorf("Error while marshalling request: %s", err)
+			log.Error().Err(err).Msg("Error while marshalling request")
 		}
 
 		host := config.GetString("server.host")
@@ -90,18 +95,18 @@ func subscribe(client mqtt.Client, config *viper.Viper) {
 
 		_, err = http.Post(url, "application/json", strings.NewReader(string(body)))
 		if err != nil {
-			log.Errorf("Error while sending request to server: %s", err)
+			log.Error().Err(err).Msg("Error while sending request to server")
 		}
 	})
 	token.Wait()
-	log.Debugf("Subscribed to topic: %s\n", topic)
+	log.Debug().Str("topic", topic).Msgf("Subscribed to topic: %s\n", topic)
 
 }
 
 func listenForPublishes(client mqtt.Client, publish PublishChannel) {
 	for {
 		message := <-publish
-		log.Debug("Publishing message: ", message)
+		log.Debug().Str("message", message.String()).Msg("Publishing message")
 		token := client.Publish(message.Topic, 0, false, message.Payload)
 		token.Wait()
 	}

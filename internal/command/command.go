@@ -9,12 +9,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/op/go-logging"
 	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/util"
 )
-
-var log = logging.MustGetLogger("command")
 
 type CommandParameters map[string]string
 

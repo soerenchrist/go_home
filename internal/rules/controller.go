@@ -61,7 +61,6 @@ func (controller *RulesController) validateRule(rule *Rule) error {
 
 	_, err = rule.ReadAction()
 	if err != nil {
-		log.Errorf("Error: %v", err)
 		return &errors.ValidationError{Message: err.Error()}
 	}
 	return nil

@@ -3,11 +3,11 @@ package server
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/background"
 	"github.com/soerenchrist/go_home/internal/config"
 	"github.com/soerenchrist/go_home/internal/db"
@@ -23,8 +23,6 @@ import (
 var (
 	g errgroup.Group
 )
-
-var log = logging.MustGetLogger("server")
 
 func Init() {
 	config := config.GetConfig()
@@ -50,34 +48,23 @@ func Init() {
 	runMqttBridge(config)
 
 	if err := g.Wait(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("Failed to start")
 	}
 }
 
 func setupLogging(config *viper.Viper) {
-	format := logging.MustStringFormatter(
-		`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
-	)
-	backend := logging.NewLogBackend(os.Stdout, "", 0)
-	backendFormatter := logging.NewBackendFormatter(backend, format)
-
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	loglevel := config.GetString("logging.level")
-	backendLeveled := logging.AddModuleLevel(backendFormatter)
 	switch loglevel {
 	case "error":
-		backendLeveled.SetLevel(logging.ERROR, "")
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	case "warn":
-		backendLeveled.SetLevel(logging.WARNING, "")
-	case "info":
-		backendLeveled.SetLevel(logging.INFO, "")
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	case "debug":
-		backendLeveled.SetLevel(logging.DEBUG, "")
-
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	default:
-		backendLeveled.SetLevel(logging.WARNING, "")
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
-
-	logging.SetBackend(backendLeveled)
 }
 
 func runHomeServer(config *viper.Viper, database db.Database, outputBindings *value.OutputBindings) {
@@ -96,7 +83,7 @@ func runHomeServer(config *viper.Viper, database db.Database, outputBindings *va
 	}
 
 	g.Go(func() error {
-		log.Infof("Starting home server on %s\n", addr)
+		log.Info().Str("address", addr).Msg("Starting home server")
 		return server.ListenAndServe()
 	})
 }
@@ -104,7 +91,7 @@ func runHomeServer(config *viper.Viper, database db.Database, outputBindings *va
 func runMqttBridge(config *viper.Viper) {
 	router, err := addMqttBridge(config)
 	if err != nil {
-		log.Warning(err)
+		log.Warn().Err(err)
 		return
 	}
 
@@ -121,7 +108,7 @@ func runMqttBridge(config *viper.Viper) {
 	}
 
 	g.Go(func() error {
-		log.Infof("Starting MQTT bridge on %s\n", addr)
+		log.Info().Str("address", addr).Msg("Starting MQTT bridge")
 		return server.ListenAndServe()
 	})
 }

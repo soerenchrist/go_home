@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
+	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/sensor"
 	"github.com/soerenchrist/go_home/internal/value"
 )
@@ -34,7 +35,7 @@ func (strgy *PingStrategy) PerformRequest(s *sensor.Sensor) (*value.SensorValue,
 	}
 
 	stats := pinger.Statistics()
-	log.Debugf("Ping %s: %v\n", s.PollingEndpoint, stats)
+	log.Debug().Str("polling_endpoint", s.PollingEndpoint).Msgf("Ping Result: %v", stats)
 
 	reachable := stats.PacketsRecv > 0
 
