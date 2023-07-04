@@ -5,10 +5,10 @@ database:
   path: "database.db"
   seed: true
 mqtt:
-  enabled: true
+  enabled: false
   clientId: "gohome-1"
   bridge:
     port: 8081
     host: localhost
 logging:
-  level: info
+  level: debug 

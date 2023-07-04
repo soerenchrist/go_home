@@ -13,8 +13,16 @@ import (
 	"github.com/soerenchrist/go_home/internal/value"
 )
 
+type loggingWriter struct {
+}
+
+func (w loggingWriter) Write(data []byte) (int, error) {
+	log.Debug(string(data))
+	return len(data), nil
+}
+
 func NewRouter(database db.Database, outputBindings *value.OutputBindings) *gin.Engine {
-	gin.DefaultWriter = io.Discard
+	gin.DefaultWriter = loggingWriter{}
 	router := gin.Default()
 	app := frontend.NewApp(router, database)
 	app.ServeHtml()
