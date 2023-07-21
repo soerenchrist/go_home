@@ -45,7 +45,7 @@ func Init() {
 	addRulesEngine(database, outputBindings)
 
 	runHomeServer(config, database, outputBindings)
-	runMqttBridge(config)
+	runMqttBridge(config, outputBindings)
 
 	if err := g.Wait(); err != nil {
 		log.Fatal().Err(err).Msg("Failed to start")
@@ -68,6 +68,7 @@ func setupLogging(config *viper.Viper) {
 
 func runHomeServer(config *viper.Viper, database db.Database, outputBindings *output.OutputBindingsManager) {
 	r := NewRouter(database, outputBindings)
+	addWebsocket(outputBindings, r)
 
 	port := config.GetString("server.port")
 	host := config.GetString("server.host")
@@ -87,7 +88,7 @@ func runHomeServer(config *viper.Viper, database db.Database, outputBindings *ou
 	})
 }
 
-func runMqttBridge(config *viper.Viper) {
+func runMqttBridge(config *viper.Viper, outputBindings *output.OutputBindingsManager) {
 	router, err := addMqttBridge(config)
 	if err != nil {
 		log.Warn().Err(err)
@@ -120,6 +121,11 @@ func addRulesEngine(database db.Database, outputBindings *output.OutputBindingsM
 
 	go rulesEngine.ListenForValues(rulesOutput)
 	go background.PollSensorValues(database, outputBindings)
+}
+
+func addWebsocket(outputBindings *output.OutputBindingsManager, router *gin.Engine) {
+	websocketOutput := output.NewWebsocketBinding(router)
+	outputBindings.Register(websocketOutput)
 }
 
 func addMqttBridge(config *viper.Viper) (*gin.Engine, error) {
