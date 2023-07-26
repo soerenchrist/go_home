@@ -4,4 +4,14 @@
 
 {{define "content"}}
     <h1 class="page_title">{{.sensor.Name}}</h1>
+    <h4 class="id_subtitle">{{.sensor.ID}}</h4>
+
+    <label for="datatype">Data type</label>
+    <p id="datatype" class="value">{{.sensor.DataType}}</p>
+
+    <label for="unit">Unit</label>
+    <p id="unit" class="value">{{.sensor.Unit}}</p>
+
+    <label for="type">Type</label>
+    <p id="type" class="value">{{.sensor.Type}}</p>
 {{end}}
