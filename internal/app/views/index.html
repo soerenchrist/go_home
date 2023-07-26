@@ -3,13 +3,14 @@
 
 
 {{define "content"}}
-    <h1 class="page_title">{{.title}}</h1>
-    <h4>Your devices:</h4>
-    <ul>
-        {{range .devices}}
-            <li><a href="/devices/{{.ID}}">{{.Name}}</a></li>
-        {{end}}
-    </ul>
+<h1 class="page_title">{{.title}}</h1>
+<h4>Your devices:</h4>
+<ul>
+    {{range .devices}}
+    <li><a href="/devices/{{.ID}}">{{.Name}}</a></li>
+    {{end}}
+</ul>
 
-    <a href="/createDevice">Create device</a>
+<a href="/createDevice">Create device</a>
+<a href="/createRule">Create rule</a>
 {{end}}

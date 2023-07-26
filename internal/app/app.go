@@ -41,5 +41,7 @@ func (app *App) ServeHtml() {
 	app.router.GET("/devices/:deviceId/createSensor", app.createSensor)
 	app.router.GET("/devices/:deviceId/createCommand", app.createCommand)
 
+	app.router.GET("/createRule", app.createRule)
+
 	app.router.Static("/static", "./internal/app/views/static")
 }
