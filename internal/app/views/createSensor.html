@@ -54,66 +54,64 @@
   window.onload = load;
 </script>
 {{end}} {{define "content"}}
-<h1 class="page_title">Create Sensor</h1>
+<h1 class="title mt-4">Create a new Sensor</h1>
 
 <div>
   <form id="sensorForm">
     <div class="input_form">
-      <label for="name">Id</label>
-      <input
-        id="id"
-        class="input_text"
-        name="id"
-        type="text"
-        placeholder="Id"
-        disabled
-      />
+      <div class="field">
+        <label class="label" for="name">Id</label>
+        <div class="control">
+          <input id="id" class="input" name="id" type="text" placeholder="Id" disabled />
+        </div>
+      </div>
 
-      <label for="name">Name</label>
-      <input
-        id="name"
-        class="input_text"
-        name="name"
-        type="text"
-        placeholder="Name"
-      />
+      <div class="field">
+        <label class="label" for="name">Name</label>
+        <div class="control">
+          <input id="name" class="input" name="name" type="text" placeholder="Name" />
+        </div>
+      </div>
 
-      <label for="deviceId">Device Id</label>
-      <input
-        id="deviceId"
-        class="input_text"
-        name="deviceId"
-        type="text"
-        placeholder="DeviceId"
-        disabled
-      />
+      <div class="field">
+        <label class="label" for="deviceId">Device Id</label>
+        <div class="control">
+          <input id="deviceId" class="input" name="deviceId" type="text" placeholder="DeviceId" disabled />
+        </div>
+      </div>
 
-      <label for="datatype">Data Type</label>
-      <select id="datatype" name="datatype">
-        <option value="string">String</option>
-        <option value="int">Int</option>
-        <option value="float">Float</option>
-        <option value="bool">Boolean</option>
-      </select>
+      <div class="field">
+        <label class="label" for="datatype">Data Type</label>
+        <div class="control select">
+          <select id="datatype" name="datatype">
+            <option value="string">String</option>
+            <option value="int">Int</option>
+            <option value="float">Float</option>
+            <option value="bool">Boolean</option>
+          </select>
+        </div>
+      </div>
 
-      <label for="unit">Unit</label>
-      <input
-        id="unit"
-        class="input_text"
-        name="unit"
-        type="text"
-        placeholder="Unit"
-      />
+      <div class="field">
+        <label class="label" for="unit">Unit</label>
+        <div class="control">
+          <input id="unit" class="input" name="unit" type="text" placeholder="Unit" />
+        </div>
+      </div>
 
-      <label for="type">Type</label>
-      <select id="type" name="type">
-        <option value="external">External</option>
-        <option value="polling">Polling</option>
-      </select>
+      <div class="field">
+        <label class="label" for="type">Type</label>
+        <div class="control select">
+          <select id="type" name="type">
+            <option value="external">External</option>
+            <option value="polling">Polling</option>
+          </select>
+        </div>
+      </div>
 
-      <span id="error_message" class="error_message"></span>
+      <div id="notification is-danger" class="error_message"></div>
 
-      <button type="submit">Create</button>
+      <button class="button is-primary" type="submit">Create</button>
     </div>
   </form>
 </div>

@@ -6,22 +6,21 @@
     let when_field = document.getElementById("when");
     let then_field = document.getElementById("then");
     let form = document.getElementById("ruleForm");
-    let error_message = document.getElementById("error_message");
 
     form.onsubmit = function (evt) {
       evt.preventDefault();
 
-      error_message.innerHTML = "";
+      hideError();
       if (name_field.value == "") {
-        error_message.innerHTML = "Name is required";
+        showError("Name is required");
         return;
       }
       if (when_field.value == "") {
-        error_message.innerHTML = "Condition is required";
+        showError("Condition is required");
         return;
       }
       if (then_field.value == "") {
-        error_message.innerHTML = "Action is required";
+        showError("Action is required");
         return;
       }
 
@@ -34,7 +33,7 @@
       createRule(body, function () {
         window.location.href = "/";
       }, function (error) {
-        error_message.innerHTML = error;
+        showError(error);
       })
     };
   }
@@ -42,25 +41,35 @@
   window.onload = load;
 </script>
 {{end}} {{define "content"}}
-<h1 class="page_title">Create Rule</h1>
+<h1 class="title mt-4">Create Rule</h1>
 
 <div>
-  <form id="ruleForm">
-    <div class="input_form">
+  <form class="form" id="ruleForm">
 
-      <label for="name">Name</label>
-      <input id="name" class="input_text" name="name" type="text" placeholder="Name" />
-
-      <label for="when">Condition</label>
-      <input id="when" class="input_text" name="when" type="text" placeholder="Condition" />
-
-      <label for="then">Action</label>
-      <input id="then" class="input_text" name="then" type="text" placeholder="Action" />
-
-      <span id="error_message" class="error_message"></span>
-
-      <button type="submit">Create</button>
+    <div class="field">
+      <label class="label" for="name">Name</label>
+      <div class="control">
+        <input id="name" class="input" name="name" type="text" placeholder="Name" />
+      </div>
     </div>
+
+    <div class="field">
+      <label class="label" for="when">Condition</label>
+      <div class="control">
+        <input id="when" class="input" name="when" type="text" placeholder="Condition" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label" for="then">Action</label>
+      <div class="control">
+        <input id="then" class="input" name="then" type="text" placeholder="Action" />
+      </div>
+    </div>
+
+    <div id="error-message" class="notification is-danger mt-2 is-hidden"></div>
+
+    <button class="button is-primary" type="submit">Create</button>
   </form>
 </div>
 {{end}}

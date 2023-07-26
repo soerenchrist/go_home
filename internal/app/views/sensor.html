@@ -14,7 +14,7 @@
             .then(response => response.json())
             .then(data => {
                 const ele = document.getElementById("value");
-                if (ele) {
+                if (ele && data.value) {
                     ele.innerHTML = data.value;
                 }
             })
@@ -36,20 +36,32 @@
 
 
 {{define "content"}}
-<h1 class="page_title">{{.sensor.Name}}</h1>
-<h4 class="id_subtitle">{{.sensor.ID}}</h4>
+<h1 class="title mt-4">{{.sensor.Name}} ({{.device.Name}})</h1>
+<h4 class="subtitle">{{.device.ID}}.{{.sensor.ID}}</h4>
 
-<label for="value">Value</label>
-<p id="value" class="value">-</p>
+<div class="field">
+    <label class="label" for="value">Value</label>
+    <div class="control">
+        <p id="value">-</p>
+    </div>
+</div>
 
-<label for="datatype">Data type</label>
-<p id="datatype" class="value">{{.sensor.DataType}}</p>
-
-<label for="unit">Unit</label>
-<p id="unit" class="value">{{.sensor.Unit}}</p>
-
-<label for="type">Type</label>
-<p id="type" class="value">{{.sensor.Type}}</p>
-
-<a href="/devices/{{.sensor.DeviceID}}">Back to device</a>
+<div class="field">
+    <label class="label" for="datatype">Data type</label>
+    <div class="control">
+        <p id="datatype" class="value">{{.sensor.DataType}}</p>
+    </div>
+</div>
+<div class="field">
+    <label class="label" for="unit">Unit</label>
+    <div class="control">
+        <p id="unit" class="value">{{.sensor.Unit}}</p>
+    </div>
+</div>
+<div class="field">
+    <label class="label" for="type">Type</label>
+    <div class="control">
+        <p id="type" class="value">{{.sensor.Type}}</p>
+    </div>
+</div>
 {{end}}

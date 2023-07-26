@@ -6,7 +6,7 @@
 
         exeButton.addEventListener("click", function () {
             const paramsField = document.getElementById("params");
-            if (!paramsField) return; 
+            if (!paramsField) return;
             const params = paramsField.value;
             fetch("/api/v1/devices/{{.command.DeviceID}}/commands/{{.command.ID}}/invoke", {
                 method: "POST",
@@ -27,24 +27,33 @@
 
 
 {{define "content"}}
-<h1 class="page_title">{{.command.Name}}</h1>
+<h1 class="title mt-4">{{.command.Name}} ({{.device.Name}})</h1>
+<h2 class="subtitle">{{.device.ID}}.{{.command.ID}}</h2>
 
-<h4 class="id_subtitle">{{.command.ID}}</h4>
-
-<div class="flex-col">
-    <label for="payloadTemplate">Payload template</label>
-    <textarea style="margin-bottom: 30px;" disabled id="payloadTemplate">{{.command.PayloadTemplate}}</textarea>
+<div class="field">
+    <label class="label" for="payloadTemplate">Payload template</label>
+    <div class="control">
+        <textarea class="textarea" disabled id="payloadTemplate">{{.command.PayloadTemplate}}</textarea>
+    </div>
 </div>
 
 
-<label for="endpoint">Endpoint</label>
-<p id="endpoint" class="value">{{.command.Endpoint}}</p>
+<div class="field">
+    <label class="label" for="endpoint">Endpoint</label>
+    <p id="endpoint" class="value">{{.command.Endpoint}}</p>
+</div>
 
-<label for="method">Method</label>
-<p id="method" class="value">{{.command.Method}}</p>
+<div class="field">
+    <label class="label" for="method">Method</label>
+    <p id="method" class="value">{{.command.Method}}</p>
+</div>
 
-<label for="params">Params</label>
-<textarea id="params" cols="30" rows="10" placeholder="Params"></textarea>
-<button id="executeCommand" class="button">Execute</button>
+<div class="field">
+    <label class="label" for="params">Params</label>
+    <div class="control">
+        <textarea class="textarea" id="params" cols="30" rows="10" placeholder="Params"></textarea>
+    </div>
+</div>
+<button id="executeCommand" class="button mt-2">Execute</button>
 <p id="response"></p>
 {{end}}

@@ -1,11 +1,11 @@
 {{define "head"}}
 <script src="/static/js/common.js"></script>
 <script>
+
   function load() {
     let id_field = document.getElementById("id");
     let name_field = document.getElementById("name");
     let form = document.getElementById("deviceForm");
-    let error_message = document.getElementById("error_message");
 
     name_field.oninput = function () {
       id_field.value = name_field.value.toLowerCase().replace(/ /g, "_");
@@ -13,10 +13,10 @@
 
     form.onsubmit = function (evt) {
       evt.preventDefault();
+      hideError();
 
-      error_message.innerHTML = "";
       if (name_field.value == "") {
-        error_message.innerHTML = "Name is required";
+        showError("Name is required")
         return;
       }
 
@@ -28,7 +28,7 @@
       createDevice(body, function () {
         window.location.href = "/";
       }, function (error) {
-        error_message.innerHTML = error;
+        showError(error);
       })
     };
   }
@@ -36,34 +36,27 @@
   window.onload = load;
 </script>
 {{end}} {{define "content"}}
-<h1 class="page_title">Create Device</h1>
+<h1 class="title mt-4">Create a new Device</h1>
 
 <div>
   <form id="deviceForm">
-    <div class="input_form">
-      <label for="name">Id</label>
-      <input
-        id="id"
-        class="input_text"
-        name="id"
-        type="text"
-        placeholder="Id"
-        disabled
-      />
-
-      <label for="name">Name</label>
-      <input
-        id="name"
-        class="input_text"
-        name="name"
-        type="text"
-        placeholder="Name"
-      />
-
-      <span id="error_message" class="error_message"></span>
-
-      <button type="submit">Create</button>
+    <div class="field">
+      <label class="label" for="name">Id</label>
+      <div class="control">
+        <input id="id" class="input" name="id" type="text" placeholder="Id" disabled />
+      </div>
     </div>
+
+    <div class="field">
+      <label class="label" for="name">Name</label>
+      <div class="control">
+        <input id="name" class="input" name="name" type="text" placeholder="Name" />
+      </div>
+    </div>
+
+    <div id="error-message" class="notification mt-2 is-danger is-hidden"></div>
+
+    <button class="button mt-2 is-primary" type="submit">Create</button>
   </form>
 </div>
 {{end}}

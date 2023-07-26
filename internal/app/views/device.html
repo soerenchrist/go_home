@@ -20,20 +20,38 @@
 
 {{define "content"}}
 {{$device := .device}}
-<h1 class="page_title">{{.device.Name}}</h1>
-<h4>Sensors: </h4>
-<ul>
-    {{range .sensors}}
-    <li><a href="/devices/{{$device.ID}}/sensors/{{.ID}}">{{.Name}} - Value: <span id="{{.ID}}-value">-</span></a></li>
-    {{end}}
-</ul>
-<h4>Commands: </h4>
+<h1 class="title mt-4">{{.device.Name}}</h1>
+<h2 class="subtitle">Sensors</h2>
+{{range .sensors}}
+<a href="/devices/{{$device.ID}}/sensors/{{.ID}}">
+    <div class="card mt-2">
+        <div class="card-header">
+            <div class="card-header-title">
+                {{.Name}}
+            </div>
+        </div>
+        <div class="card-content">
+            <div class="content">
+                <span id="{{.ID}}-value">-</span> {{.Unit}}
+            </div>
+        </div>
+    </div>
+</a>
+{{end}}
+<h2 class="subtitle mt-4">Commands: </h2>
 <ul>
     {{range .commands}}
-    <li><a href="/devices/{{$device.ID}}/commands/{{.ID}}">{{.Name}}</a></li>
+    <a href="/devices/{{$device.ID}}/commands/{{.ID}}">
+        <div class="card mt-2">
+            <div class="card-header">
+                <div class="card-header-title">
+                    {{.Name}}
+                </div>
+            </div>
+        </div>
+    </a>
     {{end}}
 </ul>
 <a href="/devices/{{$device.ID}}/createSensor">Create sensor</a>
 <a href="/devices/{{$device.ID}}/createCommand">Create command</a>
-<a href="/">Back to devices</a>
 {{end}}

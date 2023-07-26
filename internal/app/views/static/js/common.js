@@ -40,3 +40,13 @@ function post(url, body, res, rej) {
       rej("Unknown error");
     });
 }
+
+function showError(message) {
+  let error_message = document.getElementById("error-message");
+  error_message.innerHTML = message;
+  error_message.classList.remove("is-hidden");
+}
+function hideError() {
+  let error_message = document.getElementById("error-message");
+  error_message.classList.add("is-hidden");
+}
