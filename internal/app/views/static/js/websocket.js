@@ -1,9 +1,8 @@
 var ws;
 var callbacks = [];
-window.addEventListener("load", function () {
+function openWebsocket() {
   // get current host
   var host = window.location.host;
-  console.log(host);
   ws = new WebSocket("ws://" + host + "/ws");
   ws.onopen = function () {
     console.log("OPEN");
@@ -18,7 +17,7 @@ window.addEventListener("load", function () {
       callback(data);
     }
   };
-});
+}
 
 window.addEventListener("unload", function () {});
 

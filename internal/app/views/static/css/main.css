@@ -48,6 +48,11 @@ p.value {
     margin-bottom: 30px;
 }
 
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+
 div.container {
     max-width: 640px;
     margin: 0 auto;

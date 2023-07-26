@@ -1,7 +1,50 @@
 {{define "head"}}
+<script>
+    window.addEventListener('load', function () {
+        const exeButton = document.getElementById("executeCommand");
+        if (!exeButton) return;
+
+        exeButton.addEventListener("click", function () {
+            const paramsField = document.getElementById("params");
+            if (!paramsField) return; 
+            const params = paramsField.value;
+            fetch("/api/v1/devices/{{.command.DeviceID}}/commands/{{.command.ID}}/invoke", {
+                method: "POST",
+                body: params,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const responseField = document.getElementById("response");
+                    response.innerHTML = JSON.stringify(data);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        });
+    });
+</script>
 {{end}}
 
 
 {{define "content"}}
-    <h1 class="page_title">{{.command.Name}}</h1>
+<h1 class="page_title">{{.command.Name}}</h1>
+
+<h4 class="id_subtitle">{{.command.ID}}</h4>
+
+<div class="flex-col">
+    <label for="payloadTemplate">Payload template</label>
+    <textarea style="margin-bottom: 30px;" disabled id="payloadTemplate">{{.command.PayloadTemplate}}</textarea>
+</div>
+
+
+<label for="endpoint">Endpoint</label>
+<p id="endpoint" class="value">{{.command.Endpoint}}</p>
+
+<label for="method">Method</label>
+<p id="method" class="value">{{.command.Method}}</p>
+
+<label for="params">Params</label>
+<textarea id="params" cols="30" rows="10" placeholder="Params"></textarea>
+<button id="executeCommand" class="button">Execute</button>
+<p id="response"></p>
 {{end}}

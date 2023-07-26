@@ -1,6 +1,7 @@
 {{define "head"}}
 <script>
     function load() {
+        openWebsocket();
         const callback = (message) => {
             if (message.DeviceID === "{{.device.ID}}") {
                 const ele = document.getElementById(message.SensorID + "-value");
