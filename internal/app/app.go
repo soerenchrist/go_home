@@ -23,7 +23,7 @@ func NewApp(router *gin.Engine, database db.Database) *App {
 
 func (app *App) ServeHtml() {
 	view := ginview.New(goview.Config{
-		Root:         "app/views",
+		Root:         "internal/app/views",
 		Extension:    ".html",
 		Master:       "layouts/master",
 		Partials:     []string{},
@@ -39,6 +39,7 @@ func (app *App) ServeHtml() {
 
 	app.router.GET("/createDevice", app.createDevice)
 	app.router.GET("/devices/:deviceId/createSensor", app.createSensor)
+	app.router.GET("/devices/:deviceId/createCommand", app.createCommand)
 
-	app.router.Static("/static", "./app/views/static")
+	app.router.Static("/static", "./internal/app/views/static")
 }

@@ -4,17 +4,20 @@
 
 {{define "content"}}
 {{$device := .device}}
-    <h1 class="page_title">{{.device.Name}}</h1>
-    <h4>Sensors: </h4>
-    <ul>
-        {{range .sensors}}
-            <li><a href="/devices/{{$device.ID}}/sensors/{{.ID}}">{{.Name}}</a></li>
-        {{end}}
-    </ul>
-    <h4>Commands: </h4>
-    <ul>
-        {{range .commands}}
-            <li><a href="/devices/{{$device.ID}}/commands/{{.ID}}">{{.Name}}</a></li>
-        {{end}}
-    </ul>
+<h1 class="page_title">{{.device.Name}}</h1>
+<h4>Sensors: </h4>
+<ul>
+    {{range .sensors}}
+    <li><a href="/devices/{{$device.ID}}/sensors/{{.ID}}">{{.Name}}</a></li>
+    {{end}}
+</ul>
+<h4>Commands: </h4>
+<ul>
+    {{range .commands}}
+    <li><a href="/devices/{{$device.ID}}/commands/{{.ID}}">{{.Name}}</a></li>
+    {{end}}
+</ul>
+<a href="/devices/{{$device.ID}}/createSensor">Create sensor</a>
+<a href="/devices/{{$device.ID}}/createCommand">Create command</a>
+<a href="/">Back to devices</a>
 {{end}}

@@ -19,3 +19,14 @@ func (app *App) command(ctx *gin.Context) {
 		"command": command,
 	})
 }
+
+func (app *App) createCommand(ctx *gin.Context) {
+	deviceId := ctx.Param("deviceId")
+
+	if _, err := app.database.GetDevice(deviceId); err != nil {
+		ctx.HTML(http.StatusNotFound, "error", gin.H{"message": "Device not found"})
+		return
+	}
+
+	ctx.HTML(http.StatusOK, "createCommand", gin.H{})
+}

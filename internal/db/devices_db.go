@@ -12,7 +12,7 @@ func (db *SqliteDevicesDatabase) AddDevice(device *device.Device) error {
 
 func (db *SqliteDevicesDatabase) GetDevice(id string) (*device.Device, error) {
 	device := device.Device{}
-	result := db.db.First(&device, id)
+	result := db.db.First(&device, "id = ?", id)
 	return &device, result.Error
 }
 

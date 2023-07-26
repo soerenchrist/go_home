@@ -1,0 +1,125 @@
+
+{{define "head"}}
+<script src="/static/js/common.js"></script>
+<script>
+  function getDeviceId() {
+    let url = window.location.href;
+    let urlSplit = url.split("/");
+    let deviceId = urlSplit[urlSplit.length - 2];
+    return deviceId;
+  }
+  function load() {
+    let id_field = document.getElementById("id");
+    let name_field = document.getElementById("name");
+    let payload_field = document.getElementById("payloadTemplate");
+    let endpoint_field = document.getElementById("endpoint");
+    let method_field = document.getElementById("method");
+    let deviceId_field = document.getElementById("deviceId");
+    let form = document.getElementById("commandForm");
+
+    deviceId_field.value = getDeviceId();
+
+    name_field.oninput = function () {
+      id_field.value = name_field.value.toLowerCase().replace(/ /g, "_");
+    };
+
+    form.onsubmit = function (evt) {
+      evt.preventDefault();
+
+      if (name_field.value == "") {
+        error_message.innerHTML = "Name is required";
+        return;
+      }
+
+      let body = {
+        id: id_field.value,
+        name: name_field.value,
+        payload_template: payload_field.value,
+        endpoint: endpoint_field.value,
+        method: method_field.value,
+      };
+
+      createCommand(
+        body,
+        deviceId_field.value,
+        function () {
+          window.location.href = "/devices/" + deviceId_field.value;
+        },
+        function (error) {
+          error_message.innerHTML = error;
+        }
+      );
+    };
+  }
+
+  window.onload = load;
+</script>
+{{end}} {{define "content"}}
+<h1 class="page_title">Create Command</h1>
+
+<div>
+  <form id="commandForm">
+    <div class="input_form">
+      <label for="name">Id</label>
+      <input
+        id="id"
+        class="input_text"
+        name="id"
+        type="text"
+        placeholder="Id"
+        disabled
+      />
+
+      <label for="name">Name</label>
+      <input
+        id="name"
+        class="input_text"
+        name="name"
+        type="text"
+        placeholder="Name"
+      />
+
+      <label for="deviceId">Device Id</label>
+      <input
+        id="deviceId"
+        class="input_text"
+        name="deviceId"
+        type="text"
+        placeholder="DeviceId"
+        disabled
+      />
+
+      <label for="endpoint">Endpoint</label>
+      <input
+        id="endpoint"
+        class="input_text"
+        name="endpoint"
+        type="url"
+        placeholder="Endpoint"
+      />
+
+      <label for="payloadTemplate">Payload template</label>
+      <textarea
+        id="payloadTemplate"
+        class="input_text"
+        name="payloadTemplate"
+        rows="8"
+        placeholder="Payload template"
+      ></textarea> 
+
+      <label for="method">Method</label>
+      <select id="method" name="method" class="input_text">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="DELETE">DELETE</option>
+        <option value="PUT">PUT</option>
+        <option value="PATCH">PATCH</option>
+      </select>
+
+      <span id="error_message" class="error_message"></span>
+
+      <button type="submit">Create</button>
+    </div>
+  </form>
+</div>
+{{end}}

@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/soerenchrist/go_home/internal/device"
 	"github.com/soerenchrist/go_home/internal/errors"
@@ -80,7 +79,7 @@ func (c *CommandsController) PostCommand(context *gin.Context) {
 	}
 
 	command := Command{
-		ID:              uuid.NewString(),
+		ID:              request.ID,
 		Name:            request.Name,
 		DeviceID:        deviceId,
 		PayloadTemplate: request.PayloadTemplate,

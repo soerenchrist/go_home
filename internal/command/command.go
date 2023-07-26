@@ -84,6 +84,7 @@ func PrepareCommandTemplate(payloadTemplate string, params *TemplateParameters) 
 }
 
 type CreateCommandRequest struct {
+	ID              string `json:"id"`
 	Name            string `json:"name"`
 	PayloadTemplate string `json:"payload_template"`
 	Endpoint        string `json:"endpoint"`

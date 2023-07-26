@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func (app *App) device(ctx *gin.Context) {
 	deviceId := ctx.Param("deviceId")
+	log.Debug().Msgf("Device: %v", deviceId)
 	device, err := app.database.GetDevice(deviceId)
 	if err != nil {
 		ctx.HTML(http.StatusOK, "not_found", gin.H{"message": "Device not found", "back_link": "/"})
@@ -25,5 +27,22 @@ func (app *App) device(ctx *gin.Context) {
 		"device":   device,
 		"sensors":  sensors,
 		"commands": commands,
+	})
+}
+
+func (app *App) createDevice(ctx *gin.Context) {
+
+	ctx.HTML(http.StatusOK, "createDevice", gin.H{})
+}
+
+func (app *App) index(ctx *gin.Context) {
+	devices, err := app.database.ListDevices()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx.HTML(http.StatusOK, "index", gin.H{
+		"title":   "Go Home!",
+		"devices": devices,
 	})
 }
