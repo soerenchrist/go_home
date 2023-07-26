@@ -1,4 +1,19 @@
 {{define "head"}}
+<script>
+    function load() {
+        const callback = (message) => {
+            if (message.DeviceID === "{{.device.ID}}") {
+                const ele = document.getElementById(message.SensorID + "-value");
+                if (ele) {
+                    ele.innerHTML = message.Value;
+                }
+            }
+        }
+        registerToWebsocket(callback);
+    }
+
+    window.addEventListener("load", load);
+</script>
 {{end}}
 
 
@@ -8,7 +23,7 @@
 <h4>Sensors: </h4>
 <ul>
     {{range .sensors}}
-    <li><a href="/devices/{{$device.ID}}/sensors/{{.ID}}">{{.Name}}</a></li>
+    <li><a href="/devices/{{$device.ID}}/sensors/{{.ID}}">{{.Name}} - Value: <span id="{{.ID}}-value">-</span></a></li>
     {{end}}
 </ul>
 <h4>Commands: </h4>
