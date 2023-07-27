@@ -22,36 +22,42 @@
 {{$device := .device}}
 <h1 class="title mt-4">{{.device.Name}}</h1>
 <h2 class="subtitle">Sensors</h2>
-{{range .sensors}}
-<a href="/devices/{{$device.ID}}/sensors/{{.ID}}">
-    <div class="card mt-2">
-        <div class="card-header">
-            <div class="card-header-title">
-                {{.Name}}
-            </div>
-        </div>
-        <div class="card-content">
-            <div class="content">
-                <span id="{{.ID}}-value">-</span> {{.Unit}}
-            </div>
-        </div>
-    </div>
-</a>
-{{end}}
-<h2 class="subtitle mt-4">Commands: </h2>
-<ul>
-    {{range .commands}}
-    <a href="/devices/{{$device.ID}}/commands/{{.ID}}">
-        <div class="card mt-2">
-            <div class="card-header">
-                <div class="card-header-title">
-                    {{.Name}}
+<div class="columns">
+    {{range .sensors}}
+    <div class="column">
+        <a href="/devices/{{$device.ID}}/sensors/{{.ID}}">
+            <div class="card mt-2">
+                <div class="card-header">
+                    <div class="card-header-title">
+                        {{.Name}}
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="content">
+                        <span id="{{.ID}}-value">-</span> {{.Unit}}
+                    </div>
                 </div>
             </div>
-        </div>
-    </a>
+        </a>
+    </div>
     {{end}}
-</ul>
+</div>
+<h2 class="subtitle mt-4">Commands: </h2>
+<div class="columns">
+    {{range .commands}}
+    <div class="column">
+        <a href="/devices/{{$device.ID}}/commands/{{.ID}}">
+            <div class="card mt-2">
+                <div class="card-header">
+                    <div class="card-header-title">
+                        {{.Name}}
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+    {{end}}
+</div>
 <a href="/devices/{{$device.ID}}/createSensor">Create sensor</a>
 <a href="/devices/{{$device.ID}}/createCommand">Create command</a>
 {{end}}

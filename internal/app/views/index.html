@@ -5,14 +5,18 @@
 {{define "content"}}
 <h1 class="title mt-4">Your devices</h1>
 <a href="/createDevice">Create a new device</a>
-{{range .devices}}
-<a href="/devices/{{.ID}}">
-    <div class="card mt-4">
-        <div class="card-header">
-            <div class="card-header-title">{{.Name}}</div>
-        </div>
+<div class="columns">
+    {{range .devices}}
+    <div class="column">
+        <a href="/devices/{{.ID}}">
+            <div class="card mt-4">
+                <div class="card-header">
+                    <div class="card-header-title">{{.Name}}</div>
+                </div>
+            </div>
+        </a>
     </div>
-</a>
-{{end}}
+    {{end}}
+</div>
 
 {{end}}
