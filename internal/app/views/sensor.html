@@ -1,4 +1,8 @@
 {{define "head"}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/luxon@^2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@^1"></script>
 <script>
     function onWebsocketMessage(message) {
         if (message.DeviceID === "{{.sensor.DeviceID}}" && message.SensorID === "{{.sensor.ID}}") {
@@ -24,10 +28,58 @@
 
     }
 
+    async function fetchValues(deviceId, sensorId) {
+        const res = await fetch("/api/v1/devices/" + deviceId + "/sensors/" + sensorId + "/values")
+        return await res.json()
+    }
+
+    async function readValues() {
+        const values = await fetchValues("{{.device.ID}}", "{{.sensor.ID}}")
+        if (values.length > 0)
+            loadChart(values);
+    }
+
+    function loadChart(values) {
+        const ctx = document.getElementById('historyChart');
+        ctx.classList.remove("is-hidden");
+
+        const data = [];
+        for (let i = 0; i < values.length; i++) {
+            const val = values[i].value === "true" ? 1 : 0;
+            data.push({x: values[i].timestamp, y: val});
+        }
+
+        console.log(data);
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["Dataset"],
+                datasets: [{
+                    label: "Values",
+                    data,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        type: "time",
+                        min: data[0].x,
+                    },
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
     function load() {
         openWebsocket();
         readCurrentValue();
         registerToWebsocket(onWebsocketMessage);
+
+        readValues();
     }
 
     window.addEventListener("load", load);
@@ -63,5 +115,10 @@
     <div class="control">
         <p id="type" class="value">{{.sensor.Type}}</p>
     </div>
+</div>
+
+<h2 class="subtitle">History</h2>
+<div>
+    <canvas id="historyChart"></canvas>
 </div>
 {{end}}

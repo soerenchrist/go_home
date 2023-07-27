@@ -13,10 +13,12 @@ func (app *App) sensor(ctx *gin.Context) {
 	sensor, err := app.database.GetSensor(deviceId, sensorId)
 	if err != nil {
 		ctx.HTML(http.StatusOK, "not_found", gin.H{"message": "Sensor not found", "back_link": "/"})
+		return
 	}
 	device, err := app.database.GetDevice(deviceId)
 	if err != nil {
 		ctx.HTML(http.StatusOK, "not_found", gin.H{"message": "Device not found", "back_link": "/"})
+		return
 	}
 
 	ctx.HTML(http.StatusOK, "sensor", gin.H{
